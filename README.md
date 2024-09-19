@@ -497,6 +497,5 @@ spring:
       hibernate.default_batch_fetch_size: 10
 ```
 
--> 10개 단위로
 
 #### 정리 : 지연로딩을 사용하더라도 N+1 문제를 겪어 이를 해결하기 위해 fetch join을 사용하는데, xxToOne에서 fetch join 사용이 자유롭지만 xxToMany에서는 오류 뜨는 경우가 있으니 잘 사용하기
