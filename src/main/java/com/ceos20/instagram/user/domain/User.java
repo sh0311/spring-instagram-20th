@@ -6,6 +6,7 @@ import com.ceos20.instagram.post.domain.Post;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -26,17 +27,17 @@ public class User {
     private String email;
     private String password;
     private String introduce;
-    private int followed_num;
-    private int following_num;
     private String profile_image_url;
     private boolean isPublic;
 
     @OneToMany(mappedBy="following")
-    private List<Follow> followings;
+    private List<Follow> followings=new ArrayList<>();
 
     @OneToMany(mappedBy="follower")
-    private List<Follow> followers;
+    private List<Follow> followers=new ArrayList<>();
 
+    @OneToMany(mappedBy="user")
+    private List<Post> posts=new ArrayList<>();
 
 
 }

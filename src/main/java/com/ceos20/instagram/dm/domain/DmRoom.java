@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -32,6 +33,6 @@ public class DmRoom {
     private User user2;
 
     @OneToMany(mappedBy="room")
-    private List<Message> messages;
+    private List<Message> messages = new ArrayList<>();
 
 }
