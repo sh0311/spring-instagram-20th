@@ -96,7 +96,7 @@ Reflection이란? : 리플렉션은 자바에서 제공하는 기능으로, 구�
 ## Repository 단위 테스트
 Repository 단위테스트에는 @JpaDataTest를 많이 사용한다고 한다.
 
-1) Post Repository에서 user_id로 Post를 찾아 조회하는 단위테스트.
+#### 1) Post Repository에서 user_id로 Post를 찾아 조회하는 단위테스트.
 
 ```
 @DataJpaTest
@@ -234,7 +234,7 @@ Hibernate:
         p1_0.user_id=?
 ```
 
-2. Comment Repository post id를 통한 부모댓글 조회, 부모댓글 id를 통한 자식댓글 조회테스트
+#### 2. Comment Repository post id를 통한 부모댓글 조회, 부모댓글 id를 통한 자식댓글 조회테스트
 ```
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
