@@ -499,3 +499,91 @@ spring:
 
 
 #### 정리 : 지연로딩을 사용하더라도 N+1 문제를 겪어 이를 해결하기 위해 fetch join을 사용하는데, xxToOne에서 fetch join 사용이 자유롭지만 xxToMany에서는 오류 뜨는 경우가 있으니 잘 사용하기
+
+
+# 2주차
+
+### 지난주차 코드 리팩토링
+
+1. Base Entity 사용
+
+created_at과 updated_at 속성은 여러 엔티티에서 공통적으로 사용되므로, 이를 BaseTimeEntity로 분리하고, 해당 속성이 필요한 엔티티들은 BaseTimeEntity를 상속받아 사용하도록 구현하였다.
+
+1) BaseTimeEntity
+
+```
+@Getter
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class) // 엔티티의 수정/생성등의 이벤트가 발생하였을 때, 이와 같은 변경사항을 Audit하기 위함
+public class BaseTimeEntity {
+    @CreatedDate
+    @Column(name="created_at", updatable = false, columnDefinition = "timestamp")
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name="updated_at", columnDefinition = "timestamp")
+    private LocalDateTime updatedAt;
+}
+```
+
+- @MappedSuperclass : BaseEntity를 상속한 엔티티들이 BaseEntity의 필드들을 칼럼으로 인식하게 된다.
+- @EntityListeners(AuditingEntityListener.class) : 특정 엔티티 클래스에 적용되어, 해당 엔티티에서 발생하는 엔티티의 수정/생성 등의 이벤트를 감지하고 처리, 기록하는데 사용
+- @CreatedDate : Entity가 생성되어 저장될 때 날짜와 시간이 db에 자동으로 저장된다.
+- @LastModifiedDate : Entity의 값을 변경할 때 날짜와 시간이 db에 자동으로 저장된다.
+
+
+2) BaseTimeEntity를 상속
+
+```
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@AllArgsConstructor
+public class Comment extends BaseTimeEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="comment_id")
+    private Long id;
+
+    @NotNull
+    @Column(columnDefinition = "text")
+    private String content;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="post_id")
+    private Post post;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="user_id")
+    private User user;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="parent_id")
+    private Comment parent;
+
+    @OneToMany(mappedBy="parent")
+    private List<Comment> children = new ArrayList<>();
+
+}
+```
+
+3) 어플리케이션의 main method가 있는 클래스에 @EnableJpaAuditing 적용하기
+
+```
+@SpringBootApplication
+@EnableJpaAuditing
+public class InstagramApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(InstagramApplication.class, args);
+	}
+
+}
+
+```
+
+- @EnableJpaAuditing : 어플리케이션의 main method가 있는 클래스에 적용하며 JPA Auditing(감시) 기능을 어플리케이션 전역적으로 활성화하기 위한 어노테이션이다. 
+
+

@@ -1,5 +1,6 @@
 package com.ceos20.instagram.dm.domain;
 
+import com.ceos20.instagram.global.BaseTimeEntity;
 import com.ceos20.instagram.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,15 +15,11 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DmRoom {
+public class DmRoom extends BaseTimeEntity { //최근에 채팅이 오거나 보낸 채팅방 순으로 저열되어야 하므로 updated_at 필요함
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="room_id")
     private Long id;
-
-    @CreationTimestamp
-    @Column(updatable=false)
-    private LocalDateTime created_at;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user1_id")

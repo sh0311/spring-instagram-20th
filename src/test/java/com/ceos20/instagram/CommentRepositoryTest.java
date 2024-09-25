@@ -1,11 +1,8 @@
 package com.ceos20.instagram;
 
-import com.ceos20.instagram.comment.repository.CommentRepository;
 import com.ceos20.instagram.comment.domain.Comment;
 import com.ceos20.instagram.post.domain.Post;
-import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
-import com.ceos20.instagram.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

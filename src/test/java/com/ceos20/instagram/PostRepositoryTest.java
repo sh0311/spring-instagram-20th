@@ -1,14 +1,8 @@
 package com.ceos20.instagram;
 
 import com.ceos20.instagram.post.domain.Post;
-import com.ceos20.instagram.post.domain.PostImage;
-import com.ceos20.instagram.post.domain.PostLike;
 import com.ceos20.instagram.user.domain.User;
-import com.ceos20.instagram.post.repository.PostRepository;
-import com.ceos20.instagram.user.repository.UserRepository;
-import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
-import org.hibernate.annotations.CreationTimestamp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +10,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
