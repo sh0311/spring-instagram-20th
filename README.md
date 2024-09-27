@@ -587,3 +587,100 @@ public class InstagramApplication {
 - @EnableJpaAuditing : 어플리케이션의 main method가 있는 클래스에 적용하며 JPA Auditing(감시) 기능을 어플리케이션 전역적으로 활성화하기 위한 어노테이션이다. 
 
 
+### 구현할 기능
+
+- 게시글 조회
+- 게시글에 사진과 함께 글 작성하기
+- 게시글에 댓글 및 대댓글 기능
+- 게시글에 좋아요 기능
+- 게시글, 댓글, 좋아요 삭제 기능
+- 유저 간 1:1 DM 기능
+- 팔로우 기능
+- 댓글 작성하기, 대댓글 작성하기
+- 댓글 좋아요
+- 프로필 이미지 등록하기
+
+
+
+#### 게시글_이미지_포함한_단일_게시글_조회테스트
+```
+Hibernate: 
+    select
+        p1_0.post_id,
+        p1_0.content,
+        p1_0.created_at,
+        p1_0.like_num,
+        p1_0.updated_at,
+        p1_0.user_id,
+        i1_0.post_id,
+        i1_0.post_image_id,
+        i1_0.post_imageurl 
+    from
+        post p1_0 
+    left join
+        post_image i1_0 
+            on p1_0.post_id=i1_0.post_id 
+    where
+        p1_0.post_id=?
+```
+
+#### 팔로우_유저의_게시글_리스트_조회 테스트
+
+```
+Hibernate: 
+    select
+        distinct p1_0.post_id,
+        p1_0.content,
+        p1_0.created_at,
+        i1_0.post_id,
+        i1_0.post_image_id,
+        i1_0.post_imageurl,
+        p1_0.like_num,
+        p1_0.updated_at,
+        p1_0.user_id 
+    from
+        post p1_0 
+    left join
+        post_image i1_0 
+            on p1_0.post_id=i1_0.post_id 
+    where
+        p1_0.user_id in (?, ?)
+```
+
+#### 특정_유저의_게시글_리스트_조회
+
+```
+Hibernate: 
+    select
+        distinct p1_0.post_id,
+        p1_0.content,
+        p1_0.created_at,
+        i1_0.post_id,
+        i1_0.post_image_id,
+        i1_0.post_imageurl,
+        p1_0.like_num,
+        p1_0.updated_at,
+        p1_0.user_id 
+    from
+        post p1_0 
+    left join
+        post_image i1_0 
+            on p1_0.post_id=i1_0.post_id 
+    where
+        p1_0.user_id=?
+```
+
+
+#### 게시글 좋아요 조회 테스트
+
+```
+Hibernate: 
+    select
+        pl1_0.post_like_id,
+        pl1_0.post_id,
+        pl1_0.user_id 
+    from
+        post_like pl1_0 
+    where
+        pl1_0.post_id=?
+```

@@ -27,6 +27,7 @@ public class User extends BaseTimeEntity {
 
     @NotNull
     @Size(min=1, max=30)
+    @Column(unique = true)
     private String nickname;
 
     private String username;
@@ -51,7 +52,7 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy="follower")
     private List<Follow> followers=new ArrayList<>();
 
-    @OneToMany(mappedBy="user")
+    @OneToMany(mappedBy="user", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Post> posts=new ArrayList<>();
 
 

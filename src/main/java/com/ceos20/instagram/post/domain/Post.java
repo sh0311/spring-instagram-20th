@@ -2,6 +2,7 @@ package com.ceos20.instagram.post.domain;
 
 import com.ceos20.instagram.comment.domain.Comment;
 import com.ceos20.instagram.global.BaseTimeEntity;
+import com.ceos20.instagram.post.dto.PostRequestDto;
 import com.ceos20.instagram.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,11 +34,24 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name="user_id")
     private User user;
 
-    @OneToMany(mappedBy="post")
+    @OneToMany(mappedBy="post",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<PostImage> images=new ArrayList<>();
 
-    @OneToMany(mappedBy="post")
-    private List<Comment> comments=new ArrayList<>();
 
+    public void mapImages(List<PostImage> images) {
+        this.images=images;
+    }
 
+    public void update(PostRequestDto postRequestDto,List<PostImage> images) {
+        this.content=postRequestDto.getContent();
+        this.images=images;
+    }
+
+    public void increaseLikeNum(){
+        this.likeNum++;
+    }
+
+    public void decreaseLikeNum() {
+        this.likeNum--;
+    }
 }

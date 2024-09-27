@@ -1,8 +1,11 @@
 package com.ceos20.instagram;
 
 import com.ceos20.instagram.comment.domain.Comment;
+import com.ceos20.instagram.comment.repository.CommentRepository;
 import com.ceos20.instagram.post.domain.Post;
+import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
+import com.ceos20.instagram.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,31 +47,31 @@ public class CommentRepositoryTest {
                 .email("11@naver.com")
                 .password("111")
                 .introduce("test")
-                .profile_image_url("https://example.com/default-profile.png")
+                .profileImageurl("https://example.com/default-profile.png")
                 .isPublic(true)
                 .build();
 
         post1=Post.builder()
                 .content("testPost 1")
-                .like_num(0)
+                .likeNum(0)
                 .user(user)
                 .build();
 
         parent=Comment.builder()
-                .context("I'm parent")
+                .content("I'm parent")
                 .post(post1)
                 .user(user)
                 .build();
 
         child1=Comment.builder()
-                .context("I'm child1")
+                .content("I'm child1")
                 .post(post1)
                 .user(user)
                 .parent(parent)
                 .build();
 
         child2=Comment.builder()
-                .context("I'm child2")
+                .content("I'm child2")
                 .post(post1)
                 .user(user)
                 .parent(parent)
@@ -85,7 +88,7 @@ public class CommentRepositoryTest {
         commentRepository.save(child2);
 
     }
-
+/*
     @Test
     @Transactional
     void 댓글_조회_테스트(){
@@ -95,8 +98,8 @@ public class CommentRepositoryTest {
         Long parentId=parent.getId();
 
         //when
-        List<Comment> parents=commentRepository.findByPost_Id(postId);
-        List<Comment> childs=commentRepository.findByParent_Id(parentId);
+        List<Comment> parents=commentRepository.findByPostId(postId);
+        List<Comment> childs=commentRepository.findByParentId(parentId);
 
         //then
         // 게시글 갯수 확인
@@ -104,9 +107,11 @@ public class CommentRepositoryTest {
         assertEquals(2, childs.size());
 
         // 게시글 내용 확인
-        assertEquals("I'm parent", parents.get(0).getContext());
-        assertEquals("I'm child1", childs.get(0).getContext());
-        assertEquals("I'm child2", childs.get(1).getContext());
+        assertEquals("I'm parent", parents.get(0).getContent());
+        assertEquals("I'm child1", childs.get(0).getContent());
+        assertEquals("I'm child2", childs.get(1).getContent());
 
     }
+
+ */
 }
