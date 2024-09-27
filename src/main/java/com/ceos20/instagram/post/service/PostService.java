@@ -40,11 +40,10 @@ public class PostService {
         User user=userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
         //post 엔티티 생성, 저장
         Post newPost=postRequestDto.toPost(user);
-        //postRepository.save(newPost);
+
         //MultipartFile을 PostImage로 변환
         List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), newPost);
-        //PostImage를 db에 저장
-        postImageService.saveImages(images);
+
         //Post와 image 매핑
         newPost.mapImages(images);
 

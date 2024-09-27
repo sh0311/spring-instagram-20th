@@ -498,7 +498,7 @@ spring:
 ```
 
 
-#### 정리 : 지연로딩을 사용하더라도 N+1 문제를 겪어 이를 해결하기 위해 fetch join을 사용하는데, xxToOne에서 fetch join 사용이 자유롭지만 xxToMany에서는 오류 뜨는 경우가 있으니 잘 사용하기
+#### 정리 : 지연로딩을 사용하더라도 N+1 문제를 겪어 이를 해결하기 위해 fetch join을 사용하는데, xxToOne에서 fetch join 사용이 자유롭지만 `xxToMany에서는 오류` 뜨는 경우가 있으니 잘 사용하기
 
 
 # 2주차
@@ -600,7 +600,42 @@ public class InstagramApplication {
 - 댓글 좋아요
 - 프로필 이미지 등록하기
 
+```
+@Transactional
+    public void createPost(PostRequestDto postRequestDto,Long userId){
 
+        //User 객체 가져오기
+        User user=userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
+        
+        //post 엔티티 생성, 저장
+        Post newPost=postRequestDto.toPost(user);
+        //postRepository.save(newPost);
+        
+        //MultipartFile을 PostImage로 변환
+        List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), newPost);
+        
+        //PostImage를 db에 저장
+        //postImageService.saveImages(images);
+        
+        //Post와 image 매핑
+        newPost.mapImages(images);
+
+        postRepository.save(newPost);
+    }
+```
+- Q. postRepository.save(newPost)를 하지 않고도 PostImage와의 연관관계 설정이 가능한 이유
+ 
+  A. Post가 PostImage를 참조하고 있기 때문에 (@OneToMany)
+
+- Q. postImageService.saveImages(images)로 이미지를 직접 저장하지 않아도 postRepository.save(newPost)로 함께 저장되는 이유
+
+  A. Post가 PostImage를 참조하고 있기 때문에 (@OneToMany)
+
+  처음에는 부모 엔티티가 먼저 데이터베이스에 저장된 후 자식 엔티티와의 연관관계를 설정을 해야해서 newPost를 db에 저장하고 나서 image와 연관관계를 맺어야 한다 생각했다. 하지만 Post 엔티티가 아직 비영속 상태일지라도, JPA는 이 부모 엔티티가 나중에 영속화될 거라고 예상하기 때문에 자식 엔티티(PostImage)는 영속되지 않은 상태의 부모 엔티티(Post)를 참조할 수 있다고 한다. 그리고 나중에 영속화 될 때 JPA가 부모와 자식간의 관계를 처리해준다. 
+
+  또한 Post가 PostImage를 참조하도록 매핑을 해놨기 때문에 postRepository.save(newPost)가 호출되어 newPost가 영속성 컨텍스트에 들어가면, 연결된 자식엔티티인 PostImage도 함께 영속화된다. 따라서 부모 엔티티만 저장해도 자식 엔티티도 자동으로 저장된다. 즉, JPA는 부모엔티티 Post를 먼저 db에 저장한 후, 자식엔티티 PostImage도 함께 데이터베이스에 저장한다.
+
+    -> cf) 부모(Post)가 자식(PostImage)를 참조하도록 `@OneToManny`해서 가능한거지, 자식(PostImage)에서만 부모(Post)를 참조하도록 매핑했으면 불가능! 그럼 부모를 db에 저장하고나서 자식과 연관관계 설정하고, 자식 엔티티를 직접 save 해주어야 함
 
 #### 게시글_이미지_포함한_단일_게시글_조회테스트
 ```
@@ -683,4 +718,45 @@ Hibernate:
         post_like pl1_0 
     where
         pl1_0.post_id=?
+```
+
+#### 부모댓글 조회 테스트
+```
+Hibernate: 
+    select
+        c1_0.comment_id,
+        c1_0.content,
+        c1_0.created_at,
+        c1_0.like_num,
+        c1_0.parent_id,
+        p1_0.post_id,
+        p1_0.content,
+        p1_0.created_at,
+        p1_0.like_num,
+        p1_0.updated_at,
+        p1_0.user_id,
+        c1_0.updated_at,
+        u1_0.user_id,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.introduce,
+        u1_0.is_public,
+        u1_0.nickname,
+        u1_0.password,
+        u1_0.phone,
+        u1_0.profile_imageurl,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        comment c1_0 
+    join
+        user u1_0 
+            on u1_0.user_id=c1_0.user_id 
+    join
+        post p1_0 
+            on p1_0.post_id=c1_0.post_id 
+    where
+        c1_0.post_id=? 
+        and c1_0.parent_id is null
 ```

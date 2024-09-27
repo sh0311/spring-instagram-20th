@@ -107,7 +107,32 @@ public class PostRepositoryTest {
         postRepository.save(post2);
     }
 
+/*
+    @Test
+    @Transactional
+    void 게시글_생성() {
+        // given
+        image1=PostImage.builder()
+                .postImageurl("/test1")
+                .build();
 
+        image2=PostImage.builder()
+                .postImageurl("/test2")
+                .build();
+        List<PostImage> images = List.of(image1, image2);
+        post1=Post.builder()
+                .content("테스트 게시글 1")
+                .user(user)
+                .images(images)
+                .build();
+
+        //when
+        Post post = postRepository.save(post1);
+
+        // then
+        assertThat(post).isEqualTo(this.post1);
+    }
+*/
 
     @Test
     @Transactional

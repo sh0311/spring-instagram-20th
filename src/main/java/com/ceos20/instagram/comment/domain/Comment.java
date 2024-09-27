@@ -26,6 +26,9 @@ public class Comment extends BaseTimeEntity {
     @Column(name="comment_id")
     private Long id;
 
+    @Builder.Default
+    private int likeNum=0;
+
     @NotNull
     @Column(columnDefinition = "text")
     private String content;
@@ -42,7 +45,15 @@ public class Comment extends BaseTimeEntity {
     @JoinColumn(name="parent_id")
     private Comment parent;
 
+    // 부모댓글 지워질 때 자식댓글들도 함께 지워지게 하려고
     @OneToMany(mappedBy="parent", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Comment> children = new ArrayList<>();
 
+    public void increaseLike() {
+        this.likeNum++;
+    }
+
+    public void decreaseLike() {
+        this.likeNum--;
+    }
 }

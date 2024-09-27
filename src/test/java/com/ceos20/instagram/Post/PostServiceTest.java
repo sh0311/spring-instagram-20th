@@ -161,7 +161,7 @@ class PostServiceTest {
         postService.createPost(request1,1L);
 
         //then
-        //PostRespository.save()가 두 번 호출되는지 체크
+        //PostRespository.save()가 호출되는지 체크
         verify(postRepository).save(any(Post.class));
 
     }
