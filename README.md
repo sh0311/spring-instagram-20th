@@ -636,7 +636,7 @@ public class InstagramApplication {
 
 
 처음에는 부모 엔티티를 먼저 데이터베이스에 저장한 후 자식 엔티티와의 연관관계를 설정해야 한다고 생각했다.
-하지만 Post가 PostImage를 참조하도록 매핑하고, cascade = CascadeType.ALL 옵션을 설정했기 때문에 postRepository.save(newPost)가 호출되면 JPA는 먼저 부모 엔티티인 Post를 데이터베이스에 저장하고, 이어서 자식 엔티티인 PostImage도 함께 저장한다. 이때 PostImage는 이미 changeToPostImage 메서드에서 Post와의 연관관계가 설정된 상태이므로, Post가 저장된 후 생성된 Post의 ID가 외래키로 PostImage에 저장된 채로 PostImage가 데이터베이스에 저장된다.
+하지만 Post가 PostImage를 참조하도록 매핑하고, cascade = CascadeType.ALL 옵션을 설정했기 때문에 그렇지 않아도 된다. PostRepository.save(newPost)가 호출되면 JPA는 먼저 부모 엔티티인 Post를 데이터베이스에 저장하고, 이어서 자식 엔티티인 PostImage도 함께 저장한다. 이때 PostImage는 이미 changeToPostImage 메서드에서 Post와의 연관관계가 설정된 상태이므로, Post가 저장된 후 생성된 Post의 ID가 외래키로 PostImage에 저장된 채로 PostImage가 데이터베이스에 저장된다.
 
   만약 `cascade = CascadeType.ALL` 사용하지 않았다면 코드는아래와 같아야 한다.
 
