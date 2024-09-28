@@ -99,20 +99,24 @@ class PostServiceTest {
 
 
         image1=PostImage.builder()
+                .id(1L)
                 .postImageurl("/test1")
                 .build();
 
         image2=PostImage.builder()
+                .id(2L)
                 .postImageurl("/test2")
                 .build();
 
         image3=PostImage.builder()
+                .id(3L)
                 .postImageurl("/test3")
                 .build();
 
         List<PostImage> images = List.of(image1, image2);
 
         post1=Post.builder()
+                .id(1L)
                 .content("테스트 게시글 1")
                 .user(user)
                 .images(images)
@@ -127,10 +131,12 @@ class PostServiceTest {
 
         // 팔로우 관계 초기화
         follow1 = Follow.builder()
+                .id(1L)
                 .following(user)
                 .build();
 
         follow2 = Follow.builder()
+                .id(2L)
                 .following(user2)
                 .build();
 
@@ -166,47 +172,17 @@ class PostServiceTest {
 
     }
 
-    @Test
-    @Transactional
-    void 유저게시글_조회_테스트(){
 
-        //given
-        Long userId=user.getId();
-        List<PostImage> images1=List.of(image1,image2);
-
-        Post post1 = Post.builder()
-                .content("테스트 게시글 1")
-                .user(user) // 사전에 저장한 유저
-                .likeNum(0)
-                .images(images1)
-                .build();
-        postRepository.save(post1);
-
-        //when
-        List<PostResponseDto> posts=postService.getAllPostsByUser(userId);
-
-        //then
-        // 게시글 내용 확인
-        assertEquals("테스트 게시글 1", posts.get(0).getContent());
-        assertEquals("/test1", posts.get(0).getImageUrlList().get(0));
-        assertEquals(0, posts.get(0).getLikeNum());
-
-    }
 
     @Test
     @Transactional
     void 하나의_특정_게시글_조회_테스트(){
 
         //given
-        List<PostImage> images1=List.of(image1,image2);
+        Long postId=1L;
 
-        Post post1 = Post.builder()
-                .content("테스트 게시글 1")
-                .user(user) // 사전에 저장한 유저
-                .likeNum(0)
-                .images(images1)
-                .build();
-        postRepository.save(post1);
+
+        given(postRepository.findById(postId)).willReturn(Optional.of(post1));
 
         //when
         Post post=postRepository.findById(post1.getId()).orElseThrow(()-> new IllegalArgumentException("게시글 없음"));

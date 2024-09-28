@@ -3,6 +3,7 @@ package com.ceos20.instagram.Post;
 import com.ceos20.instagram.follow.domain.Follow;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.domain.PostImage;
+import com.ceos20.instagram.post.repository.PostImageRepository;
 import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
@@ -29,6 +30,9 @@ public class PostRepositoryTest {
     private PostRepository postRepository;
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PostImageRepository postImageRepository;
 
     private User user;
     private User user2;
@@ -66,32 +70,40 @@ public class PostRepositoryTest {
                 .isPublic(true)
                 .build();
 
+        userRepository.save(user);
+        userRepository.save(user2);
+
+
+
+        post1=Post.builder()
+                .content("테스트 게시글 1")
+                .user(user)
+                .build();
+        post2 = Post.builder()
+                .content("테스트 게시글 2")
+                .user(user)
+                .likeNum(0)
+                .build();
 
         image1=PostImage.builder()
+                .post(post1)
                 .postImageurl("/test1")
                 .build();
 
         image2=PostImage.builder()
+                .post(post1)
                 .postImageurl("/test2")
                 .build();
 
         image3=PostImage.builder()
+                .post(post2)
                 .postImageurl("/test3")
                 .build();
 
         List<PostImage> images = List.of(image1, image2);
 
-        post1=Post.builder()
-                .content("테스트 게시글 1")
-                .user(user)
-                .images(images)
-                .build();
-        post2 = Post.builder()
-                .content("테스트 게시글 2")
-                .user(user) // 사전에 저장한 유저
-                .likeNum(0)
-                .images(new ArrayList<>())
-                .build();
+        post1.mapImages(images);
+        post2.mapImages(new ArrayList<>());
 
         // 팔로우 관계 초기화
         follow1 = Follow.builder()
@@ -102,7 +114,7 @@ public class PostRepositoryTest {
                 .following(user2)
                 .build();
 
-        userRepository.save(user);
+
         postRepository.save(post1);
         postRepository.save(post2);
     }
@@ -134,6 +146,7 @@ public class PostRepositoryTest {
     }
 */
 
+
     @Test
     @Transactional
     void 게시글_이미지_포함한_단일_게시글_조회() {
@@ -157,6 +170,7 @@ public class PostRepositoryTest {
         // then
         assertEquals(2, posts.size());
     }
+
 
     @Test
     @Transactional

@@ -648,11 +648,18 @@ public class InstagramApplication {
   postImageService.saveImages(images);
 
   ```
+### N+1 문제 해결법
 
+- N+1문제 : Lazy 로딩시에는 연관된(매핑된) 엔티티를 get하는 식으로 사용할 때 추가적으로 쿼리가 나가게 된다.
+
+- 다대일 관계 (Comment에서 Post를 사용) : fetch join 하기
+
+- 일대다 관계 (Post에서 Images를 사용) : `1) distinct + fetch join` or `2) @BatchSize 이용`
+
+-> 두 개이상의 List를 fetch join하거나 페이징을 사용할 댄 fetch join 사용이 불가능하므로 @BatchSize를 이용해야 한다. 따라서 일대다 관계에서는 @BatchSize를 이용하는 경우가 많다고 한다.
    
+
 ### 쿼리 조회
-
-
 
 #### 팔로우_유저의_게시글_리스트_조회 테스트
 
@@ -676,7 +683,7 @@ Hibernate:
     where
         p1_0.user_id in (?, ?)
 ```
-
+-> 팔로잉중인 유저들의 게시글을 모두 조회할 때 발생하는 쿼리다. 팔로잉중인 유저들의 id가 매우 많을 수도 있어 user들의 id를 in절에 모아 한번에 조회하도록 하였다. 또한 PostResponseDto에서 getImage()하여 imageurl 리스트를 함께 반환해주므로 N+1문제가 발생할 수 있다. 이를 막기 위해 fetch join하여 post와 image를 한번에 가져오게하고, 일대다 관계이기에 post가 중복돼서 나타날 수 있어 distinct 키워드를 붙여주었다.
 
 
 
@@ -721,48 +728,136 @@ Hibernate:
         and c1_0.parent_id is null
 ```
 
-#### 내가 속한 채팅방들을 최신에 업데이트 된 순으로 조회
+부모 댓글을 조회할 때 post의 id와 댓글 작성자의 id도 함께 넘겨줘야하기에 comment.getPost().id()와 comment.getUser().id()를 하게 되어 N+1 문제가 발생할 수 있다. 이를 막기 위해 comment를 조회할 때 post와 user도 fetch join으로 함께 가져오도록 했다.
+
+
+### Service 테스트
+
+
 ```
-Hibernate: 
-    select
-        dr1_0.room_id,
-        dr1_0.created_at,
-        dr1_0.updated_at,
-        u1_0.user_id,
-        u1_0.created_at,
-        u1_0.email,
-        u1_0.introduce,
-        u1_0.is_public,
-        u1_0.nickname,
-        u1_0.password,
-        u1_0.phone,
-        u1_0.profile_imageurl,
-        u1_0.status,
-        u1_0.updated_at,
-        u1_0.username,
-        u2_0.user_id,
-        u2_0.created_at,
-        u2_0.email,
-        u2_0.introduce,
-        u2_0.is_public,
-        u2_0.nickname,
-        u2_0.password,
-        u2_0.phone,
-        u2_0.profile_imageurl,
-        u2_0.status,
-        u2_0.updated_at,
-        u2_0.username 
-    from
-        dm_room dr1_0 
-    join
-        user u1_0 
-            on u1_0.user_id=dr1_0.user1_id 
-    join
-        user u2_0 
-            on u2_0.user_id=dr1_0.user2_id 
-    where
-        dr1_0.user1_id=? 
-        or dr1_0.user2_id=? 
-    order by
-        dr1_0.updated_at desc
+@ExtendWith(MockitoExtension.class)  //@Mock 사용하기 위해
+class PostServiceTest {
+
+    @Mock
+    private PostRepository postRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private PostImageService postImageService;
+
+    @Mock
+    private FollowRepository followRepository;
+
+    @Mock
+    private CommentRepository commentRepository;
+
+    @Mock
+    private PostLikeRepository postLikeRepository;
+
+    @InjectMocks
+    private PostService postService;
+
 ```
+
+- `@ExtendWith(MockitoExtension.class)` : Mockito가 @Mock과 @InjectMocks를 처리할 수 있게끔 테스트 실행을 확장시켜준다
+
+- `@Mock` : 의존성 객체들을 가짜 객체로 대체하여 service의 비즈니스 로직을 테스트할 때, 실제 의존성 객체들의 동작에 신경 쓰지 않고 service 자체의 로직을 집중적으로 검증할 수 있다.
+
+- `@InjectMocks` : 실제 PostService에 Mock 객체들을 주입해준다.
+
+
+```
+@BeforeEach // 테스트 실행 전에 실행
+    void setUp(){
+        user=User.builder()
+                .id(1L)
+                .nickname("sh")
+                .username("test1")
+                .phone("010-1111-1111")
+                .email("11@naver.com")
+                .password("111")
+                .introduce("test")
+                .profileImageurl("https://example.com/default-profile.png")
+                .isPublic(true)
+                .build();
+        user2=User.builder()
+                .id(2L)
+                .nickname("shh")
+                .username("test2")
+                .phone("010-2222-1111")
+                .email("22@naver.com")
+                .password("222")
+                .introduce("test2")
+                .profileImageurl("https://example.com/default-profile2.png")
+                .isPublic(true)
+                .build();
+
+
+        image1=PostImage.builder()
+                .id(1L)
+                .postImageurl("/test1")
+                .build();
+
+        image2=PostImage.builder()
+                .id(2L)
+                .postImageurl("/test2")
+                .build();
+
+        image3=PostImage.builder()
+                .id(3L)
+                .postImageurl("/test3")
+                .build();
+
+        List<PostImage> images = List.of(image1, image2);
+
+        post1=Post.builder()
+                .id(1L)
+                .content("테스트 게시글 1")
+                .user(user)
+                .images(images)
+                .build();
+        post2 = Post.builder()
+                .id(2L)
+                .content("테스트 게시글 2")
+                .user(user) // 사전에 저장한 유저
+                .likeNum(0)
+                .images(new ArrayList<>())
+                .build();
+
+        // 팔로우 관계 초기화
+        follow1 = Follow.builder()
+                .following(user)
+                .build();
+
+        follow2 = Follow.builder()
+                .following(user2)
+                .build();
+}
+```
+- 테스트 전에, 테스트에 사용될 객체 생성하기. 실제 repository를 사용하는 게 아니라서 db에 저장되지 않아 내가 직접 id 설정해주어야 한다.
+
+```
+@Test
+    @Transactional
+    void 하나의_특정_게시글_조회_테스트(){
+
+        //given
+        Long postId=1L;
+
+        given(postRepository.findById(postId)).willReturn(Optional.of(post1));
+
+        //when
+        Post post=postRepository.findById(post1.getId()).orElseThrow(()-> new IllegalArgumentException("게시글 없음"));
+
+        //then
+        // 게시글 내용 확인
+        assertEquals("테스트 게시글 1", post.getContent());
+        assertEquals("/test1", post.getImages().get(0).getPostImageurl());
+        assertEquals(0, post.getLikeNum());
+
+    }
+```
+
+- `given(postRepository.findById(postId)).willReturn(Optional.of(post1))` : 테스트에서 사용하는 가짜 객체인 postRepository에서 findById 메서드 호출 시 post1을 반환하겠다고 미리 정의

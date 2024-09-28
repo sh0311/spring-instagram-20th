@@ -6,6 +6,7 @@ import com.ceos20.instagram.post.dto.PostRequestDto;
 import com.ceos20.instagram.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.swing.plaf.basic.BasicEditorPaneUI;
@@ -33,6 +34,7 @@ public class Post extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     private User user;
+
 
     @OneToMany(mappedBy="post",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<PostImage> images=new ArrayList<>();
