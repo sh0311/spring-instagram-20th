@@ -46,14 +46,20 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
-    @OneToMany(mappedBy="following")
-    private List<Follow> followings=new ArrayList<>();
-
-    @OneToMany(mappedBy="follower")
-    private List<Follow> followers=new ArrayList<>();
+    @Builder.Default
+    private int followerCount=0;
+    @Builder.Default
+    private int followingCount=0;
 
     @OneToMany(mappedBy="user", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Post> posts=new ArrayList<>();
 
 
+    public void increaseFollowingNum() {
+        followingCount++;
+    }
+
+    public void increaseFollowerNum() {
+        followerCount++;
+    }
 }

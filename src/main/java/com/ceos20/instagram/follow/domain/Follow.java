@@ -22,4 +22,11 @@ public class Follow {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="follower_id")
     private User follower;
+
+    @Builder.Default
+    private boolean isApproved=false;
+
+    public void approve() {
+        this.isApproved=true;
+    }
 }

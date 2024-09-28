@@ -82,7 +82,6 @@ public class PostRepositoryTest {
         post2 = Post.builder()
                 .content("테스트 게시글 2")
                 .user(user)
-                .likeNum(0)
                 .build();
 
         image1=PostImage.builder()
@@ -101,9 +100,10 @@ public class PostRepositoryTest {
                 .build();
 
         List<PostImage> images = List.of(image1, image2);
+        List<PostImage> images2 = List.of(image3);
 
         post1.mapImages(images);
-        post2.mapImages(new ArrayList<>());
+        post2.mapImages(images2);
 
         // 팔로우 관계 초기화
         follow1 = Follow.builder()
