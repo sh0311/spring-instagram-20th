@@ -62,4 +62,12 @@ public class User extends BaseTimeEntity {
     public void increaseFollowerNum() {
         followerCount++;
     }
+
+    public void decreaseFollowingNum() {
+        followingCount--;
+    }
+
+    public void decreaseFollowerNum() {
+        followerCount--;
+    }
 }

@@ -43,5 +43,23 @@ public class FollowService {
     }
 
     //팔로잉 취소하기
+    public void deleteFollowing(FollowRequestDto followRequestDto){
+        Follow follow=followRepository.findFollowByFollowingIdAndFollowerId(followRequestDto.getSenderId(), followRequestDto.getReceiverId()).orElseThrow(()->new IllegalArgumentException("해당 팔로우 객체가 존재하지 않습니다."));
+
+        // 팔로우 객체 삭제
+        followRepository.delete(follow);
+
+        // 팔로잉 및 팔로워 수 감소
+        User sender = follow.getFollowing();
+        User receiver = follow.getFollower();
+
+        sender.decreaseFollowingNum();
+        receiver.decreaseFollowerNum();
+
+        // 유저 정보를 저장 (팔로잉/팔로워 수 갱신)
+        userRepository.save(sender);
+        userRepository.save(receiver);
+    }
+
 
 }
