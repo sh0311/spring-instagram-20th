@@ -30,7 +30,7 @@ public class PostImageService {
                     String url=saveImage(image);
                     return PostImage.builder()
                             .postImageurl(url)
-                            .post(post)
+                            .post(post)  //연관관계의 주인인 postImage를 post와 연관관계를 설정해줘야 postImage에 post의 id가 외래키로 제대로 저장됨
                             .build();
 
                 })

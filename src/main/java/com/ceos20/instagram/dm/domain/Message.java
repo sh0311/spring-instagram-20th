@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -25,6 +27,9 @@ public class Message extends BaseTimeEntity{
     @Builder.Default
     private boolean isRead = false;
 
+    //메시지 읽은 시간 저장
+    private LocalDateTime readAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="room_id")
     private DmRoom room;
@@ -33,4 +38,8 @@ public class Message extends BaseTimeEntity{
     @JoinColumn(name="sender_id")
     private User sender;
 
+    public void setRead() {
+        this.isRead=true;
+        this.readAt = LocalDateTime.now();
+    }
 }

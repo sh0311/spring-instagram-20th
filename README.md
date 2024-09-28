@@ -459,7 +459,7 @@ fetch join이란? : jpa에서 일반 join을 사용해 엔티티를 가져올 �
 근데 fetch join을 사용할 때 distinct를 안 하면 문제가 생길 수 있다. 일대다 fetch join의 경우, 부모 엔티티가 자식 엔티티의 수만큼 중복돼서 나타나는 문제가 있다.  
 `select t from Team t join fetch t.member` 으로 Team(일)을 조회할 때 팀이 속한 Member(다)도 조회할 때, inner join에 의해 매칭되는 데이터를 반환하여 Team A에 속한 멤버가 3명이면 Team A가 세 번 조회되는 문제가 발생한다. 이를 막으려면 `select distinct t from Team t join fetch t.members` 이렇게 distinct 키워드를 붙여 각 팀마다 한 번씩만 조회되게 해야 한다. 이때 distinct는 SELECT 대상(Team)에 대해서 중복제거 한다.
 
-일대다를 패치 조인한다면 꼭 distinct 를 써야 한다 !
+#### 일대다를 패치 조인한다면 꼭 distinct 를 써야 한다 !
 
 
 ### Q4. fetch join 을 할 때 생기는 에러가 생기는 3가지 에러 메시지의 원인과 해결 방안
@@ -600,6 +600,9 @@ public class InstagramApplication {
 - 댓글 좋아요
 - 프로필 이미지 등록하기
 
+
+### cascade=CascadeType.ALL 속성
+
 ```
 @Transactional
     public void createPost(PostRequestDto postRequestDto,Long userId){
@@ -623,41 +626,33 @@ public class InstagramApplication {
         postRepository.save(newPost);
     }
 ```
-- Q. postRepository.save(newPost)를 하지 않고도 PostImage와의 연관관계 설정이 가능한 이유
+- Q. postRepository.save(newPost)를 아직 하지 않은 상태에서도 PostImage와의 연관관계 설정이 가능하고 db에 저장될 때 post의 id가 외래키로 잘 들어가는 이유
  
-  A. Post가 PostImage를 참조하고 있기 때문에 (@OneToMany)
+  A. Post가 PostImage를 참조하고 있고(@OneToMany) 이때 cascade = CascadeType.ALL 속성을걸어줘서!
 
 - Q. postImageService.saveImages(images)로 이미지를 직접 저장하지 않아도 postRepository.save(newPost)로 함께 저장되는 이유
 
-  A. Post가 PostImage를 참조하고 있기 때문에 (@OneToMany)
+  A. Post가 PostImage를 참조하고 있고(@OneToMany) 이때 cascade = CascadeType.ALL 속성을걸어줘서! (매핑해줘도 cascade = CascadeType.ALL 속성이 없다면 각각 save 해줘야함)
 
-  처음에는 부모 엔티티가 먼저 데이터베이스에 저장된 후 자식 엔티티와의 연관관계를 설정을 해야해서 newPost를 db에 저장하고 나서 image와 연관관계를 맺어야 한다 생각했다. 하지만 Post 엔티티가 아직 비영속 상태일지라도, JPA는 이 부모 엔티티가 나중에 영속화될 거라고 예상하기 때문에 자식 엔티티(PostImage)는 영속되지 않은 상태의 부모 엔티티(Post)를 참조할 수 있다고 한다. 그리고 나중에 영속화 될 때 JPA가 부모와 자식간의 관계를 처리해준다. 
 
-  또한 Post가 PostImage를 참조하도록 매핑을 해놨기 때문에 postRepository.save(newPost)가 호출되어 newPost가 영속성 컨텍스트에 들어가면, 연결된 자식엔티티인 PostImage도 함께 영속화된다. 따라서 부모 엔티티만 저장해도 자식 엔티티도 자동으로 저장된다. 즉, JPA는 부모엔티티 Post를 먼저 db에 저장한 후, 자식엔티티 PostImage도 함께 데이터베이스에 저장한다.
+처음에는 부모 엔티티를 먼저 데이터베이스에 저장한 후 자식 엔티티와의 연관관계를 설정해야 한다고 생각했다.
+하지만 Post가 PostImage를 참조하도록 매핑하고, cascade = CascadeType.ALL 옵션을 설정했기 때문에 postRepository.save(newPost)가 호출되면 JPA는 먼저 부모 엔티티인 Post를 데이터베이스에 저장하고, 이어서 자식 엔티티인 PostImage도 함께 저장한다. 이때 PostImage는 이미 changeToPostImage 메서드에서 Post와의 연관관계가 설정된 상태이므로, Post가 저장된 후 생성된 Post의 ID가 외래키로 PostImage에 저장된 채로 PostImage가 데이터베이스에 저장된다.
 
-    -> cf) 부모(Post)가 자식(PostImage)를 참조하도록 `@OneToManny`해서 가능한거지, 자식(PostImage)에서만 부모(Post)를 참조하도록 매핑했으면 불가능! 그럼 부모를 db에 저장하고나서 자식과 연관관계 설정하고, 자식 엔티티를 직접 save 해주어야 함
+  만약 `cascade = CascadeType.ALL` 사용하지 않았다면 코드는아래와 같아야 한다.
 
-#### 게시글_이미지_포함한_단일_게시글_조회테스트
-```
-Hibernate: 
-    select
-        p1_0.post_id,
-        p1_0.content,
-        p1_0.created_at,
-        p1_0.like_num,
-        p1_0.updated_at,
-        p1_0.user_id,
-        i1_0.post_id,
-        i1_0.post_image_id,
-        i1_0.post_imageurl 
-    from
-        post p1_0 
-    left join
-        post_image i1_0 
-            on p1_0.post_id=i1_0.post_id 
-    where
-        p1_0.post_id=?
-```
+  ```
+  postRepository.save(newPost);
+
+  List<PostImage> images = postImageService.changeToPostImage(postRequestDto.getImages(), newPost);
+
+  postImageService.saveImages(images);
+
+  ```
+
+   
+### 쿼리 조회
+
+
 
 #### 팔로우_유저의_게시글_리스트_조회 테스트
 
@@ -675,50 +670,15 @@ Hibernate:
         p1_0.user_id 
     from
         post p1_0 
-    left join
+    join
         post_image i1_0 
             on p1_0.post_id=i1_0.post_id 
     where
         p1_0.user_id in (?, ?)
 ```
 
-#### 특정_유저의_게시글_리스트_조회
-
-```
-Hibernate: 
-    select
-        distinct p1_0.post_id,
-        p1_0.content,
-        p1_0.created_at,
-        i1_0.post_id,
-        i1_0.post_image_id,
-        i1_0.post_imageurl,
-        p1_0.like_num,
-        p1_0.updated_at,
-        p1_0.user_id 
-    from
-        post p1_0 
-    left join
-        post_image i1_0 
-            on p1_0.post_id=i1_0.post_id 
-    where
-        p1_0.user_id=?
-```
 
 
-#### 게시글 좋아요 조회 테스트
-
-```
-Hibernate: 
-    select
-        pl1_0.post_like_id,
-        pl1_0.post_id,
-        pl1_0.user_id 
-    from
-        post_like pl1_0 
-    where
-        pl1_0.post_id=?
-```
 
 #### 부모댓글 조회 테스트
 ```
@@ -759,4 +719,50 @@ Hibernate:
     where
         c1_0.post_id=? 
         and c1_0.parent_id is null
+```
+
+#### 내가 속한 채팅방들을 최신에 업데이트 된 순으로 조회
+```
+Hibernate: 
+    select
+        dr1_0.room_id,
+        dr1_0.created_at,
+        dr1_0.updated_at,
+        u1_0.user_id,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.introduce,
+        u1_0.is_public,
+        u1_0.nickname,
+        u1_0.password,
+        u1_0.phone,
+        u1_0.profile_imageurl,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username,
+        u2_0.user_id,
+        u2_0.created_at,
+        u2_0.email,
+        u2_0.introduce,
+        u2_0.is_public,
+        u2_0.nickname,
+        u2_0.password,
+        u2_0.phone,
+        u2_0.profile_imageurl,
+        u2_0.status,
+        u2_0.updated_at,
+        u2_0.username 
+    from
+        dm_room dr1_0 
+    join
+        user u1_0 
+            on u1_0.user_id=dr1_0.user1_id 
+    join
+        user u2_0 
+            on u2_0.user_id=dr1_0.user2_id 
+    where
+        dr1_0.user1_id=? 
+        or dr1_0.user2_id=? 
+    order by
+        dr1_0.updated_at desc
 ```
