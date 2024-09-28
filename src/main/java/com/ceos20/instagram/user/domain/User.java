@@ -4,6 +4,7 @@ package com.ceos20.instagram.user.domain;
 import com.ceos20.instagram.follow.domain.Follow;
 import com.ceos20.instagram.global.BaseTimeEntity;
 import com.ceos20.instagram.post.domain.Post;
+import com.ceos20.instagram.user.dto.UserRequestDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -31,7 +32,7 @@ public class User extends BaseTimeEntity {
     private String nickname;
 
     private String username;
-    private String phone;
+
     private String email;
 
     @NotNull
@@ -44,7 +45,7 @@ public class User extends BaseTimeEntity {
     private boolean isPublic = true;
 
     @Enumerated(EnumType.STRING)
-    private UserStatus status;
+    private UserStatus status;  //비활,탈퇴-> INACTIVE
 
     @Builder.Default
     private int followerCount=0;
@@ -69,5 +70,14 @@ public class User extends BaseTimeEntity {
 
     public void decreaseFollowerNum() {
         followerCount--;
+    }
+
+    public void update(UserRequestDto userRequestDto) {
+        this.nickname = userRequestDto.getNickname();
+        this.username = userRequestDto.getUsername();
+        this.email = userRequestDto.getEmail();
+        this.introduce = userRequestDto.getIntroduce();
+        this.profileImageurl = userRequestDto.getProfileImageurl();
+        this.status = userRequestDto.getStatus();
     }
 }
