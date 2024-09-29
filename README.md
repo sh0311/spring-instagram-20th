@@ -612,13 +612,13 @@ public class InstagramApplication {
         
         //post 엔티티 생성, 저장
         Post newPost=postRequestDto.toPost(user);
-        //postRepository.save(newPost);
+        //postRepository.save(newPost);  (불필요)
         
         //MultipartFile을 PostImage로 변환
         List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), newPost);
         
         //PostImage를 db에 저장
-        //postImageService.saveImages(images);
+        //postImageService.saveImages(images);  (불필요)
         
         //Post와 image 매핑
         newPost.mapImages(images);
@@ -646,11 +646,16 @@ public class InstagramApplication {
   List<PostImage> images = postImageService.changeToPostImage(postRequestDto.getImages(), newPost);
 
   postImageService.saveImages(images);
+  
+  //Post와 image 매핑
+  newPost.mapImages(images);
+
+  postRepository.save(newPost);
 
   ```
 ### N+1 문제 해결법
 
-- N+1문제 : Lazy 로딩시에는 연관된(매핑된) 엔티티를 get하는 식으로 사용할 때 추가적으로 쿼리가 나가게 된다.
+- N+1문제 : Lazy 로딩을 하더라도 연관된(매핑된) 엔티티를 get하는 식으로 사용할 때 추가적으로 쿼리가 나가게 된다.
 
 - 다대일 관계 (Comment에서 Post를 사용) : fetch join 하기
 
