@@ -42,7 +42,6 @@ public class CommentRepositoryTest {
         user=User.builder()
                 .nickname("sh")
                 .username("test1")
-                .phone("010-1111-1111")
                 .email("11@naver.com")
                 .password("111")
                 .introduce("test")

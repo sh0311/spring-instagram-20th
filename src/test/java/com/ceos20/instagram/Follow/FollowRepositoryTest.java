@@ -1,12 +1,11 @@
-package com.ceos20.instagram.Dm;
+package com.ceos20.instagram.Follow;
 
-import com.ceos20.instagram.comment.domain.Comment;
-import com.ceos20.instagram.comment.repository.CommentRepository;
+
 import com.ceos20.instagram.dm.domain.DmRoom;
 import com.ceos20.instagram.dm.repository.DmRoomRepository;
 import com.ceos20.instagram.dm.repository.MessageRepository;
-import com.ceos20.instagram.post.domain.Post;
-import com.ceos20.instagram.post.repository.PostRepository;
+import com.ceos20.instagram.follow.domain.Follow;
+import com.ceos20.instagram.follow.repository.FollowRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,22 +21,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class DmRepositoryTest {
+public class FollowRepositoryTest {
+
     @Autowired
-    private DmRoomRepository dmRoomRepository;
+    private FollowRepository followRepository;
 
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private MessageRepository messageRepository;
 
 
     private User user;
     private User user2;
     private User user3;
-    private DmRoom room;
-    private DmRoom room2;
+    private Follow follow1;
+    private Follow follow2;
 
     @BeforeEach
         // 테스트 실행 전에 실행
@@ -72,39 +70,40 @@ public class DmRepositoryTest {
                 .isPublic(true)
                 .build();
 
-        room=DmRoom.builder()
-                .user1(user)
-                .user2(user2)
+        follow1=Follow.builder()
+                    .following(user2)
+                    .follower(user)
+                    .build();
+
+        follow2=Follow.builder()
+                .following(user3)
+                .follower(user)
                 .build();
 
-        room2=DmRoom.builder()
-                .user1(user3)
-                .user2(user)
-                .build();
+
 
         userRepository.save(user);
         userRepository.save(user2);
         userRepository.save(user3);
-        dmRoomRepository.save(room);
-        dmRoomRepository.save(room2);
+        followRepository.save(follow1);
+        followRepository.save(follow2);
 
     }
 
+
     @Test
     @Transactional
-    void 내_채팅방_조회(){
+    void 내_팔로잉목록_조회(){
 
         //given
         Long userId=user.getId();
 
         //when
-        List<DmRoom> rooms=dmRoomRepository.findRoomsByUser1IdOrUser2Id(userId);
+        List<Follow> followingList=followRepository.findFollowingsByFollowerId(userId);
 
         //then
-        assertEquals(2, rooms.size());
+        assertEquals(2, followingList.size());
 
     }
 
-
 }
-
