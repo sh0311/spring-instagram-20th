@@ -18,7 +18,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // in 쿼리를 이용해 followingIds 리스트에 있는 id들을 모아 한번에 조회
     @Query("select distinct p from Post p join fetch p.images where p.user.id in :followingIds")
-    List<Post> findPostsByUsers(@Param("followingIds") List<Long> followingIds);
+    List<Post> findPostsByUserIdsIn(@Param("followingIds") List<Long> followingIds);
 
     List<Post> findByUserId(Long userId);
 }

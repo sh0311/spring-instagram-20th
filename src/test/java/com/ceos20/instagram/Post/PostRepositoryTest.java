@@ -163,7 +163,7 @@ public class PostRepositoryTest {
         List<Long> followingIds = List.of(user.getId(), user2.getId());
 
         // when
-        List<Post> posts = postRepository.findPostsByUsers(followingIds);
+        List<Post> posts = postRepository.findPostsByUserIdsIn(followingIds);
 
         // then
         assertEquals(2, posts.size());

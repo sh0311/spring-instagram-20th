@@ -62,7 +62,7 @@ public class DmService {
     public List<DmRoomResponseDto> getAllRooms(Long userId){
         userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 없습니다."));
         //내가 참여한 모든 채팅방 조회
-        List<DmRoom> myRoomList=dmRoomRepository.findRoomsByUser1IdOrUser2Id(userId);
+        List<DmRoom> myRoomList=dmRoomRepository.findRoomsByUserIdOrderByUpdatedAtDesc(userId);
         List<DmRoomResponseDto> rooms=myRoomList.stream()
                 .map(room-> {User otherUser= room.getUser1().getId().equals(userId)?room.getUser2():room.getUser1();
                     return DmRoomResponseDto.of(room,otherUser.getNickname());

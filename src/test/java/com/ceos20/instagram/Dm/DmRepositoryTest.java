@@ -98,7 +98,7 @@ public class DmRepositoryTest {
         Long userId=user.getId();
 
         //when
-        List<DmRoom> rooms=dmRoomRepository.findRoomsByUser1IdOrUser2Id(userId);
+        List<DmRoom> rooms=dmRoomRepository.findRoomsByUserIdOrderByUpdatedAtDesc(userId);
 
         //then
         assertEquals(2, rooms.size());

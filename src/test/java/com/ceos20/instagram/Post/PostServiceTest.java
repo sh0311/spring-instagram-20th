@@ -202,7 +202,7 @@ class PostServiceTest {
 
         given(followRepository.findFollowingsByFollowerId(userId)).willReturn(List.of(follow1, follow2));
 
-        given(postRepository.findPostsByUsers(List.of(1L, 2L))).willReturn(List.of(post1, post2));
+        given(postRepository.findPostsByUserIdsIn(List.of(1L, 2L))).willReturn(List.of(post1, post2));
 
         //when
         List<PostResponseDto> response=postService.getAllPostsByFollowing(userId);
@@ -214,7 +214,7 @@ class PostServiceTest {
 
         // followRepository, postRepository 호출 검증
         verify(followRepository).findFollowingsByFollowerId(userId);
-        verify(postRepository).findPostsByUsers(List.of(1L, 2L));
+        verify(postRepository).findPostsByUserIdsIn(List.of(1L, 2L));
     }
 
     @Test

@@ -77,7 +77,7 @@ public class PostService {
                 .map(follow -> follow.getFollowing().getId())
                 .toList();
         //해당 유저들의 게시글 리스트
-        List<Post> postList = postRepository.findPostsByUsers(followingIds);
+        List<Post> postList = postRepository.findPostsByUserIdsIn(followingIds);
         return postList.stream()
                 .map(PostResponseDto::of)
                 .toList();
