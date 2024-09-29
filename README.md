@@ -505,7 +505,7 @@ spring:
 
 ### 지난주차 코드 리팩토링
 
-1. Base Entity 사용
+#### Base Entity 사용
 
 created_at과 updated_at 속성은 여러 엔티티에서 공통적으로 사용되므로, 이를 BaseTimeEntity로 분리하고, 해당 속성이 필요한 엔티티들은 BaseTimeEntity를 상속받아 사용하도록 구현하였다.
 
