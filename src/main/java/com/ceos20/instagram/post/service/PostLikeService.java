@@ -7,16 +7,18 @@ import com.ceos20.instagram.post.repository.PostLikeRepository;
 import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PostLikeService {
 
 
@@ -45,6 +47,7 @@ public class PostLikeService {
     }
 
     // 게시글 좋아요 등록
+    @Transactional
     private void increaseLike(Post post, User user){
         PostLike like=PostLike.builder()
                 .post(post)
@@ -55,6 +58,7 @@ public class PostLikeService {
         post.increaseLikeNum();
     }
     // 게시글 좋아요 취소
+    @Transactional
     private void decreaseLike(Post post, PostLike like){
         postLikeRepository.delete(like);
 

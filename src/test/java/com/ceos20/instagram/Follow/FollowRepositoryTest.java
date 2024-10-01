@@ -105,5 +105,4 @@ public class FollowRepositoryTest {
         assertEquals(2, followingList.size());
 
     }
-
 }

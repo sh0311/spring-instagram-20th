@@ -12,17 +12,20 @@ import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly=true)
 public class DmService {
     private final MessageRepository messageRepository;
     private final DmRoomRepository dmRoomRepository;
     private final UserRepository userRepository;
 
     // dm 보내기
+    @Transactional
     public void sendMessage(MessageRequestDto messageRequestDto){
         //방이 안만들어져있다면 방 생성하기(DmRoomService 메소드 호출)
         User sender=messageRequestDto.getSender();
@@ -41,6 +44,7 @@ public class DmService {
     }
 
     // 채팅방 생성
+    @Transactional
     private DmRoom createRoom(User sender, User receiver){
         DmRoom newRoom=DmRoom.builder()
                 .user1(sender)  //처음 채팅 보낸 사람
@@ -74,6 +78,7 @@ public class DmService {
 
     
     // 내가 보낸 dm삭제
+    @Transactional
     public void deleteMessage(Long messageId){
         messageRepository.findById(messageId).orElseThrow(()->new IllegalArgumentException("해당 id의 메시지가 없습니다."));
         messageRepository.deleteById(messageId);

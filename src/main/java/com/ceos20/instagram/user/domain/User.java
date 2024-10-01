@@ -19,7 +19,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA의 엔티티는 기본 생성자가 반드시 필요함
 @Builder
 @AllArgsConstructor // Builder는 파라미터 있는 생성자가 필요
-@DynamicInsert // Insert 시 지정된 default 값을 적용시킨다
 public class User extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,6 +52,7 @@ public class User extends BaseTimeEntity {
     private int followingCount=0;
 
     @OneToMany(mappedBy="user", cascade = CascadeType.ALL,orphanRemoval = true)
+    @Builder.Default
     private List<Post> posts=new ArrayList<>();
 
 

@@ -47,6 +47,7 @@ public class Comment extends BaseTimeEntity {
 
     // 부모댓글 지워질 때 자식댓글들도 함께 지워지게 하려고
     @OneToMany(mappedBy="parent", cascade = CascadeType.ALL,orphanRemoval = true)
+    @Builder.Default
     private List<Comment> children = new ArrayList<>();
 
     public void increaseLike() {

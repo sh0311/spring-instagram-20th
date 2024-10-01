@@ -5,16 +5,20 @@ import com.ceos20.instagram.follow.dto.FollowRequestDto;
 import com.ceos20.instagram.follow.repository.FollowRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly=true)
 public class FollowService {
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
 
     //팔로우 신청하기
+    @Transactional
     public void createFollow(FollowRequestDto followRequestDto){
         User sender=userRepository.findById(followRequestDto.getSenderId()).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
         User receiver=userRepository.findById(followRequestDto.getReceiverId()).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
@@ -28,6 +32,7 @@ public class FollowService {
     }
 
     //팔로우 승인하기
+    @Transactional
     public void approveFollow(FollowRequestDto followRequestDto){
         User sender=userRepository.findById(followRequestDto.getSenderId()).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
         User receiver=userRepository.findById(followRequestDto.getReceiverId()).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
@@ -43,6 +48,7 @@ public class FollowService {
     }
 
     //팔로잉 취소하기
+    @Transactional
     public void deleteFollowing(FollowRequestDto followRequestDto){
         Follow follow=followRepository.findFollowByFollowingIdAndFollowerId(followRequestDto.getSenderId(), followRequestDto.getReceiverId()).orElseThrow(()->new IllegalArgumentException("해당 팔로우 객체가 존재하지 않습니다."));
 

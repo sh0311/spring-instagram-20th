@@ -16,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
 
     private final CommentRepository commentRepository;
@@ -45,6 +46,7 @@ public class CommentService {
     }
 
     //댓글 삭제
+    @Transactional
     public void deleteComment(Long commentId) {
         Comment comment=commentRepository.findById(commentId).orElseThrow(()->new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
         commentRepository.delete(comment);

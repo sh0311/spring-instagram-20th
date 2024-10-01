@@ -117,11 +117,12 @@ public class PostRepositoryTest {
         postRepository.save(post2);
     }
 
-/*
+
     @Test
     @Transactional
     void 게시글_생성() {
         // given
+
         image1=PostImage.builder()
                 .postImageurl("/test1")
                 .build();
@@ -140,9 +141,10 @@ public class PostRepositoryTest {
         Post post = postRepository.save(post1);
 
         // then
-        assertThat(post).isEqualTo(this.post1);
+        assertEquals(0,post.getLikeNum());
+        assertEquals(new ArrayList<>(),post.getImages());
     }
-*/
+
 
 
     @Test

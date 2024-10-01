@@ -4,12 +4,15 @@ import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.dto.UserRequestDto;
 import com.ceos20.instagram.user.dto.UserResponseDto;
 import com.ceos20.instagram.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
 
