@@ -55,6 +55,11 @@ public class Comment extends BaseTimeEntity {
     }
 
     public void decreaseLike() {
-        this.likeNum--;
+        if(this.likeNum>0){
+            this.likeNum--;
+        }
+        else{
+            this.likeNum=0;
+        }
     }
 }
