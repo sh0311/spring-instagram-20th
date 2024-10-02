@@ -10,6 +10,7 @@ import com.ceos20.instagram.dm.repository.DmRoomRepository;
 import com.ceos20.instagram.dm.repository.MessageRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
+import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,7 @@ import java.util.List;
 public class DmService {
     private final MessageRepository messageRepository;
     private final DmRoomRepository dmRoomRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     // dm 보내기
     @Transactional
@@ -44,7 +45,6 @@ public class DmService {
     }
 
     // 채팅방 생성
-    @Transactional
     private DmRoom createRoom(User sender, User receiver){
         DmRoom newRoom=DmRoom.builder()
                 .user1(sender)  //처음 채팅 보낸 사람
@@ -64,7 +64,7 @@ public class DmService {
     
     // 최근 대화 오간순으로 내 채팅방 리스트 반환
     public List<DmRoomResponseDto> getAllRooms(Long userId){
-        userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 없습니다."));
+        userService.findUserById(userId); //해당 id의 유저가 존재하는지 ㅔ크
         //내가 참여한 모든 채팅방 조회
         List<DmRoom> myRoomList=dmRoomRepository.findRoomsByUserIdOrderByUpdatedAtDesc(userId);
         List<DmRoomResponseDto> rooms=myRoomList.stream()

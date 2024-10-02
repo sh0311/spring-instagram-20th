@@ -2,8 +2,10 @@ package com.ceos20.instagram.post.service;
 
 
 import com.ceos20.instagram.comment.repository.CommentRepository;
+import com.ceos20.instagram.comment.service.CommentService;
 import com.ceos20.instagram.follow.domain.Follow;
 import com.ceos20.instagram.follow.repository.FollowRepository;
+import com.ceos20.instagram.follow.service.FollowService;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.domain.PostImage;
 import com.ceos20.instagram.post.dto.PostRequestDto;
@@ -14,6 +16,7 @@ import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
 
+import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,18 +31,20 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
+
+    private final UserService userService;
     private final PostImageService postImageService;
-    private final FollowRepository followRepository;
-    private final PostLikeRepository postLikeRepository;
-    private final CommentRepository commentRepository;
+    private final FollowService followService;
+    private final PostLikeService postLikeService;
+    private final CommentService commentService;
+
 
     // 게시글 생성
     @Transactional
     public void createPost(PostRequestDto postRequestDto,Long userId){
 
         //User 객체 가져오기
-        User user=userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
+        User user=userService.findUserById(userId);
         //post 엔티티 생성, 저장
         Post newPost=postRequestDto.toPost(user);
 
@@ -73,7 +78,7 @@ public class PostService {
 
     // 팔로잉 중인 유저들의 게시글 전체 조회
     public List<PostResponseDto> getAllPostsByFollowing(Long userId){
-        List<Follow> followings=followRepository.findFollowingsByFollowerId(userId);
+        List<Follow> followings=followService.findFollowingsByFollowerId(userId);
         //팔로잉 중인 유저들의 id 리스트
         List<Long> followingIds=followings.stream()
                 .map(follow -> follow.getFollowing().getId())
@@ -103,11 +108,15 @@ public class PostService {
     @Transactional
     public void deletePost(Long postId){
         Post target=postRepository.findById(postId).orElseThrow(()-> new IllegalArgumentException("해당 id의 게시글이 없습니다."));
-        commentRepository.deleteByPostId(postId);
-        postLikeRepository.deleteByPostId(postId);
+        commentService.deleteCommentByPostId(postId);
+        postLikeService.deletePostLikeByPostId(postId);
         postImageService.deleteImages(postId); //서버에 업로드한 이미지 삭제. db 말고. 구현예정
 
         //CascadeType.ALL에 의해 PostImage도 같이 삭제됨
         postRepository.delete(target);
+    }
+
+    public Post findPostById(Long postId){
+        return postRepository.findById(postId).orElseThrow(()->new IllegalArgumentException("해당 id의 스터디가 존재하지 않습니다."));
     }
 }

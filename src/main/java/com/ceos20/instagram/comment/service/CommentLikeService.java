@@ -7,6 +7,7 @@ import com.ceos20.instagram.comment.repository.CommentRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
 
+import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,14 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class CommentLikeService {
 
     private final CommentLikeRepository commentLikeRepository;
-    private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final CommentService commentService;
 
     //댓글 좋아요 누르기
     @Transactional
     public void pressCommentLike(Long commentId, Long userId) {
-        Comment target=commentRepository.findById(commentId).orElseThrow(()->new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
-        User user=userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+        Comment target=commentService.findCommentById(commentId);
+        User user=userService.findUserById(userId);
 
         CommentLike commentLike=commentLikeRepository.findByCommentId(commentId).orElse(null);
 

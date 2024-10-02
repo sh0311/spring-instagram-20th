@@ -6,22 +6,25 @@ import com.ceos20.instagram.follow.repository.FollowRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
 
+import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly=true)
 public class FollowService {
     private final FollowRepository followRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     //팔로우 신청하기
     @Transactional
     public void createFollow(FollowRequestDto followRequestDto){
-        User sender=userRepository.findById(followRequestDto.getSenderId()).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
-        User receiver=userRepository.findById(followRequestDto.getReceiverId()).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
+        User sender=userService.findUserById(followRequestDto.getSenderId());
+        User receiver=userService.findUserById(followRequestDto.getReceiverId());
 
         Follow newFollow=Follow.builder()
                 .following(sender)
@@ -34,8 +37,8 @@ public class FollowService {
     //팔로우 승인하기
     @Transactional
     public void approveFollow(FollowRequestDto followRequestDto){
-        User sender=userRepository.findById(followRequestDto.getSenderId()).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
-        User receiver=userRepository.findById(followRequestDto.getReceiverId()).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저가 존재하지 않습니다."));
+        User sender=userService.findUserById(followRequestDto.getSenderId());
+        User receiver=userService.findUserById(followRequestDto.getReceiverId());
 
         Follow target=followRepository.findFollowByFollowingIdAndFollowerId(followRequestDto.getSenderId(), followRequestDto.getReceiverId()).orElseThrow(()->new IllegalArgumentException("해당 팔로우 객체가 존재하지 않습니다."));
 
@@ -63,9 +66,12 @@ public class FollowService {
         receiver.decreaseFollowerNum();
 
         // 유저 정보를 저장 (팔로잉/팔로워 수 갱신)
-        userRepository.save(sender);
-        userRepository.save(receiver);
+        userService.saveUser(sender);
+        userService.saveUser(receiver);
     }
 
+    public List<Follow> findFollowingsByFollowerId(Long userId){
+        return followRepository.findFollowingsByFollowerId(userId);
+    };
 
 }

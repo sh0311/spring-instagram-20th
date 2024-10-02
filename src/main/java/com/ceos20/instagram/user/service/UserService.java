@@ -33,4 +33,14 @@ public class UserService {
         userRepository.save(user);
         return UserResponseDto.of(user);
     }
+
+    // id로 user 존재 여부 확인 + user 반환
+    public User findUserById(Long userId){
+        return userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("해당 id의 유저를 찾을 수 없습니다."));
+    }
+
+    // user 저장
+    public void saveUser(User user){
+        userRepository.save(user);
+    }
 }

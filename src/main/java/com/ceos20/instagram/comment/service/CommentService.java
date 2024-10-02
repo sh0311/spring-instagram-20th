@@ -6,8 +6,10 @@ import com.ceos20.instagram.comment.dto.CommentResponseDto;
 import com.ceos20.instagram.comment.repository.CommentRepository;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.repository.PostRepository;
+import com.ceos20.instagram.post.service.PostService;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
+import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,14 +22,14 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final PostService postService;
 
     //댓글 등록
     @Transactional
     public void createComment(CommentRequestDto commentRequestDto) {
-        Post post=postRepository.findById(commentRequestDto.getPostId()).orElseThrow(()->new IllegalArgumentException("해당 게시글이 없습니다."));
-        User user=userRepository.findById(commentRequestDto.getUserId()).orElseThrow(()-> new IllegalArgumentException("해당 유저가 없습니다."));
+        Post post=postService.findPostById(commentRequestDto.getPostId());
+        User user=userService.findUserById(commentRequestDto.getUserId());
         //부모댓글 작성하는 경우
         Comment parent=null;
         //자식댓글 작성하는 경우
@@ -54,7 +56,7 @@ public class CommentService {
 
     //부모댓글 조회
     public List<CommentResponseDto> getParentCommentsByPost(Long postId){
-        Post post=postRepository.findById(postId).orElseThrow(()-> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+        Post post=postService.findPostById(postId);
 
         List<Comment> parents=commentRepository.findParentsByPostId(postId);
         return parents.stream()
@@ -72,5 +74,11 @@ public class CommentService {
                 .toList();
     }
 
+    public Comment findCommentById(Long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(()-> new IllegalArgumentException("해당 id의 댓글이 존재하지 않습니다."));
+    }
 
+    public void deleteCommentByPostId(Long postId) {
+        commentRepository.deleteById(postId);
+    }
 }

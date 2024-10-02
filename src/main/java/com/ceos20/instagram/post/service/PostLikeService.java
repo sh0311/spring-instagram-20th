@@ -8,6 +8,7 @@ import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
 
+import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,15 +25,14 @@ public class PostLikeService {
 
     private final PostLikeRepository postLikeRepository;
 
-    private final PostRepository postRepository;
-
-    private final UserRepository userRepository;
+    private final PostService postService;
+    private final UserService userService;
 
     // 게시글에 좋아요 누르기
     @Transactional
     public void pressLike(Long postId, Long userId){
-        Post target=postRepository.findById(postId).orElseThrow(()-> new IllegalArgumentException("해당 게시글이 없습니다."));
-        User user=userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("해당 유저가 없습니다."));
+        Post target=postService.findPostById(postId);
+        User user=userService.findUserById(userId);
 
         //repository에 해당 postId, userId 가진 객체가 있다면 좋아요 누른 적 있음, 없다면 없음
         PostLike like=postLikeRepository.findByPostIdAndUserId(postId, userId).orElse(null);
@@ -47,7 +47,6 @@ public class PostLikeService {
     }
 
     // 게시글 좋아요 등록
-    @Transactional
     private void increaseLike(Post post, User user){
         PostLike like=PostLike.builder()
                 .post(post)
@@ -58,7 +57,6 @@ public class PostLikeService {
         post.increaseLikeNum();
     }
     // 게시글 좋아요 취소
-    @Transactional
     private void decreaseLike(Post post, PostLike like){
         postLikeRepository.delete(like);
 
@@ -72,5 +70,9 @@ public class PostLikeService {
                 .map(PostLikeResponseDto::of)
                 .toList();
         return responseDtos;
+    }
+
+    public void deletePostLikeByPostId(Long postId) {
+        postLikeRepository.deleteByPostId(postId);
     }
 }
