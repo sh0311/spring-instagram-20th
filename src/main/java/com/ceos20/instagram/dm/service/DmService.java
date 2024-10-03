@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -49,14 +50,27 @@ public class DmService {
         DmRoom newRoom=DmRoom.builder()
                 .user1(sender)  //처음 채팅 보낸 사람
                 .user2(receiver)  //처음 채팅 받은 사람
+                .user1LeaveTime(null) // 처음 만들어지면 첫 메시지부터 보이게 하기 위해
+                .user2LeaveTime(null)
                 .build();
         dmRoomRepository.save(newRoom);
         return newRoom;
     }
 
 
+    // 채팅방 나가기
+    public void leaveRoom(Long userId, Long roomId){
+        DmRoom targetRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new IllegalArgumentException("해당 id의 채팅방이 없습니다."));
+        if(!targetRoom.isUserInRoom(userId)){
+            throw new IllegalArgumentException("해당 id의 유저가 채팅방에 존재하지 않습니다");
+        }
+        //유저가 채팅방에 존재하는 경우
+        //떠나는 유저의 leaveTime 업데이트
+        targetRoom.updateLeaveTime(userId);
+    }
 
-    
+
+
     // 최근 대화 오간순으로 내 채팅방 리스트 반환
     public List<DmRoomResponseDto> getAllRooms(Long userId){
         userService.findUserById(userId); //해당 id의 유저가 존재하는지 ㅔ크
@@ -82,9 +96,16 @@ public class DmService {
     
     
     // 특정 dmRoom에 있는 메시지들 조회
-    public List<MessageResponseDto> getMessagesInRoom(Long roomId){
+    public List<MessageResponseDto> getMessagesInRoom(Long roomId, Long userId){
         DmRoom dmRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new IllegalArgumentException("해당 id의 dm방이 없습니다."));
-        List<Message> messages=messageRepository.findMessageWithSenderByRoomId(roomId);
+        userService.findUserById(userId);
+        //해당 유저가 채팅방 나간시간 조회
+        LocalDateTime userLeaveTime=userId.equals(dmRoom.getUser1().getId())?dmRoom.getUser1LeaveTime():dmRoom.getUser2LeaveTime();
+
+        // userLeaveTime이 null이라면(채팅방 나간적 x) 모든 메시지 조회, 아니면 message의 생성시간이 leaveTime 이후인 message들만 조회
+        List<Message> messages=(userLeaveTime==null)?messageRepository.findMessageWithSenderByRoomId(roomId):messageRepository.findMessageWithSenderByRoomIdAndCreatedAtAfter(roomId, userLeaveTime);
+
+
         //message의 isRead 필드값 true로 변경+읽은 시간 저장
         messages.forEach(message->{
             if(!message.isRead()){

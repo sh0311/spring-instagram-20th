@@ -29,8 +29,25 @@ public class DmRoom extends BaseTimeEntity { //최근에 채팅이 오거나 보
     @JoinColumn(name="user2_id")
     private User user2;  //처음 메시지 받은사람
 
+    // 유저가 채팅방 떠난 시간 이후의 메시지만 보여줘야 해서
+    private LocalDateTime user1LeaveTime;
+    private LocalDateTime user2LeaveTime;
+
 
     public void updateLastActivity() {
         updateUpdatedAt();
+    }
+
+    public boolean isUserInRoom(Long userId){
+        return (userId.equals(user1.getId())||userId.equals(user2.getId()));
+    }
+
+    public void updateLeaveTime(Long userId){
+        if (userId.equals(user1.getId())) {
+            user1LeaveTime=LocalDateTime.now();
+        }
+        else if(userId.equals(user2.getId())) {
+            user2LeaveTime=LocalDateTime.now();
+        }
     }
 }
