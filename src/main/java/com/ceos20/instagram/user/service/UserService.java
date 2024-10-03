@@ -30,7 +30,6 @@ public class UserService {
     public UserResponseDto updateUser(UserRequestDto userRequestDto){
         User user=userRepository.findByNickname(userRequestDto.getNickname()).orElseThrow(()->new IllegalArgumentException("해당 id의 유저가 없습니다."));
         user.update(userRequestDto);
-        userRepository.save(user);
         return UserResponseDto.of(user);
     }
 

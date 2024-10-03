@@ -47,7 +47,6 @@ public class FollowService {
         sender.increaseFollowingNum();
         receiver.increaseFollowerNum();
 
-        followRepository.save(target);
     }
 
     //팔로잉 취소하기
@@ -62,12 +61,10 @@ public class FollowService {
         User sender = follow.getFollowing();
         User receiver = follow.getFollower();
 
+        // 유저 정보를 수정 후 저장 (팔로잉/팔로워 수 갱신) -> 더티체킹
         sender.decreaseFollowingNum();
         receiver.decreaseFollowerNum();
-
-        // 유저 정보를 저장 (팔로잉/팔로워 수 갱신)
-        userService.saveUser(sender);
-        userService.saveUser(receiver);
+        
     }
 
     public List<Follow> findFollowingsByFollowerId(Long userId){

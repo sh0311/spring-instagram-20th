@@ -53,14 +53,9 @@ public class DmService {
         dmRoomRepository.save(newRoom);
         return newRoom;
     }
-    
-    
-    // 채팅방 나가기
 
 
 
-
-    
     
     // 최근 대화 오간순으로 내 채팅방 리스트 반환
     public List<DmRoomResponseDto> getAllRooms(Long userId){

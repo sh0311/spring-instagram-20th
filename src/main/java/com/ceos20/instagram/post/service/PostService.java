@@ -100,7 +100,6 @@ public class PostService {
         }
         List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), target);
         target.update(postRequestDto, images);
-        postRepository.save(target);
         return PostResponseDto.of(target);
     }
 
