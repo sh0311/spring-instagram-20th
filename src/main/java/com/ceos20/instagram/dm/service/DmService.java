@@ -58,6 +58,7 @@ public class DmService {
     }
 
 
+
     // 채팅방 나가기
     public void leaveRoom(Long userId, Long roomId){
         DmRoom targetRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new IllegalArgumentException("해당 id의 채팅방이 없습니다."));
@@ -72,16 +73,19 @@ public class DmService {
 
 
     // 최근 대화 오간순으로 내 채팅방 리스트 반환
-    public List<DmRoomResponseDto> getAllRooms(Long userId){
+    public List<DmRoomResponseDto> getMyAllRooms(Long userId){
         userService.findUserById(userId); //해당 id의 유저가 존재하는지 ㅔ크
         //내가 참여한 모든 채팅방 조회
         List<DmRoom> myRoomList=dmRoomRepository.findRoomsByUserIdOrderByUpdatedAtDesc(userId);
+        //채팅방 리스트 엔티티 -> dto로
         List<DmRoomResponseDto> rooms=myRoomList.stream()
-                .map(room-> {User otherUser= room.getUser1().getId().equals(userId)?room.getUser2():room.getUser1();
-                    return DmRoomResponseDto.of(room,otherUser.getNickname());
-                })
+                .map(room-> DmRoomResponseDto.of(room,findOtherUser(userId, room).getNickname()))
                 .toList();
         return rooms;
+    }
+    //채팅방 내 상대방 유저 찾기
+    private User findOtherUser(Long userId,DmRoom room){
+        return userId.equals(room.getUser1().getId())?room.getUser2():room.getUser1();
     }
 
 
@@ -96,6 +100,7 @@ public class DmService {
     
     
     // 특정 dmRoom에 있는 메시지들 조회
+    @Transactional  // updateIsRead보단 하나의 전체 프로세스를 관리하는 특정 서비스 메소드에 @Transactional 거는 게 좋다
     public List<MessageResponseDto> getMessagesInRoom(Long roomId, Long userId){
         DmRoom dmRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new IllegalArgumentException("해당 id의 dm방이 없습니다."));
         userService.findUserById(userId);
@@ -105,15 +110,19 @@ public class DmService {
         // userLeaveTime이 null이라면(채팅방 나간적 x) 모든 메시지 조회, 아니면 message의 생성시간이 leaveTime 이후인 message들만 조회
         List<Message> messages=(userLeaveTime==null)?messageRepository.findMessageWithSenderByRoomId(roomId):messageRepository.findMessageWithSenderByRoomIdAndCreatedAtAfter(roomId, userLeaveTime);
 
-
         //message의 isRead 필드값 true로 변경+읽은 시간 저장
-        messages.forEach(message->{
-            if(!message.isRead()){
-                message.setRead();}
-        });
+        updateIsRead(messages);
+
         return messages.stream()
                 .map(MessageResponseDto::from)
                 .toList();
 
+    }
+    //message의 isRead 필드값 true로 변경+읽은 시간 저장
+    private void updateIsRead(List<Message> messages){
+        messages.forEach(message->{
+            if(!message.isRead()){
+                message.setRead();}
+        });
     }
 }

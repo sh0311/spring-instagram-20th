@@ -19,7 +19,7 @@ public class UserService {
     // 회원가입
 
 
-    // user 한명 조회
+    // user 한 명 조회
     public UserResponseDto getUser(Long userId){
         User user=userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("해당 id의 유저가 없습니다."));
         return UserResponseDto.of(user);
@@ -27,8 +27,8 @@ public class UserService {
 
     // user 정보 수정
     @Transactional
-    public UserResponseDto updateUser(UserRequestDto userRequestDto){
-        User user=userRepository.findByNickname(userRequestDto.getNickname()).orElseThrow(()->new IllegalArgumentException("해당 id의 유저가 없습니다."));
+    public UserResponseDto updateUser(UserRequestDto userRequestDto, Long userId){
+        User user=userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("해당 id의 유저가 없습니다."));
         user.update(userRequestDto);
         return UserResponseDto.of(user);
     }

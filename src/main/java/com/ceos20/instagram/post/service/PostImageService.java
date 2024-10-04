@@ -18,17 +18,8 @@ import java.util.List;
 @Transactional(readOnly=true)
 public class PostImageService {
     private final PostImageRepository postImageRepository;
-    
-    //이미지 업로드 및 저장방법 공부 후 수정 예정
-    //게시물 업로드 시 업로드한 이미지 저장
+
     @Transactional
-    public void saveImages(List<PostImage> images){
-        for(PostImage image:images){
-            postImageRepository.saveAll(images);
-        }
-    }
-
-
     public List<PostImage> changeToPostImage(List<MultipartFile> images, Post post) {
         if(images.isEmpty()){ //@RequestBody로 프론트한테 받을 시 List<MultipartFile>가 누락되어 있으면 스프링이 자동으로 빈 리스트로 처리한다.
             return new ArrayList<>();
@@ -47,8 +38,7 @@ public class PostImageService {
 
 
     // 이미지파일 저장하고 url 반환 (공부하고 나서 나중에 구현)
-    @Transactional
-    public String saveImage(MultipartFile image) {
+    private String saveImage(MultipartFile image) {
         return "Temp post image url";
     }
 

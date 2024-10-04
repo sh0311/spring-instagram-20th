@@ -56,12 +56,17 @@ public class PostLikeService {
 
         post.increaseLikeNum();
     }
+
     // 게시글 좋아요 취소
     private void decreaseLike(Post post, PostLike like){
         postLikeRepository.delete(like);
 
         post.decreaseLikeNum();
     }
+
+
+
+
 
     // 특정 게시글 좋아요 전체 조회
     public List<PostLikeResponseDto> getPostLikeList(Long postId){

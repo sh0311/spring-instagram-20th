@@ -866,3 +866,44 @@ class PostServiceTest {
 ```
 
 - `given(postRepository.findById(postId)).willReturn(Optional.of(post1))` : 테스트에서 사용하는 가짜 객체인 postRepository에서 findById 메서드 호출 시 post1을 반환하겠다고 미리 정의
+
+
+### @Transactional
+@Transactional을 사용하게 되면 메서드가 정상적으로 종료되면 트랜잭션을 commit하고, 예외가 발생하면 트랜잭션을 rollback을 하게 된다. 즉, 비정상적인 종료로 인해 일부 작업만 데이터베이스에 반영되는 것을 방지해 데이터 일관성을 유지해준다.
+@Transactional은 하나의 전체 프로세스를 관리하는 특정 서비스 메소드에 거는 게 좋다고 한다.
+
+아래 코드의 예시를 보자.
+
+```
+@Transactional  // updateIsRead보단 하나의 전체 프로세스를 관리하는 특정 서비스 메소드에 @Transactional 거는 게 좋다
+    public List<MessageResponseDto> getMessagesInRoom(Long roomId, Long userId){
+        DmRoom dmRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new IllegalArgumentException("해당 id의 dm방이 없습니다."));
+        userService.findUserById(userId);
+        //해당 유저가 채팅방 나간시간 조회
+        LocalDateTime userLeaveTime=userId.equals(dmRoom.getUser1().getId())?dmRoom.getUser1LeaveTime():dmRoom.getUser2LeaveTime();
+
+        // userLeaveTime이 null이라면(채팅방 나간적 x) 모든 메시지 조회, 아니면 message의 생성시간이 leaveTime 이후인 message들만 조회
+        List<Message> messages=(userLeaveTime==null)?messageRepository.findMessageWithSenderByRoomId(roomId):messageRepository.findMessageWithSenderByRoomIdAndCreatedAtAfter(roomId, userLeaveTime);
+
+        //message의 isRead 필드값 true로 변경+읽은 시간 저장
+        updateIsRead(messages);
+
+        return messages.stream()
+                .map(MessageResponseDto::from)
+                .toList();
+
+    }
+    //message의 isRead 필드값 true로 변경+읽은 시간 저장
+    private void updateIsRead(List<Message> messages){
+        messages.forEach(message->{
+            if(!message.isRead()){
+                message.setRead();}
+        });
+    }
+```
+
+`특정 메시지 방에 존재하는 메시지를 조회하는 메소드` 안에 `message의 isRead 필드값을 true로 변경하고 읽은 시간을 저장`하는 상태 변경 로직이 들어가있다. 이때 `updateIsRead`라는 작은 범위에만 @Transactional을 적용하기보다는, 전체적으로 메시지를 조회하는 서비스 메소드에 @Transactional을 적용하는 것이 더 좋다.
+
+- #### @Transactional(readOnly=true)
+
+조회 메소드에 사용한다. readOnly=true 속성을 사용하면, 트랜잭션 Commit 시 영속성 컨텍스트가 자동으로 flush 되지 않으므로 조회용으로 가져온 Entity의 예상치 못한 수정을 방지할 수 있고, JPA는 해당 트랜잭션 내에서 조회하는 Entity는 조회용임을 인식하고 변경 감지를 위한 Snapshot을 따로 보관하지 않으므로 메모리가 절약되는 이점 또한 존재한다고 한다. 따라서 조회용 메소드에는 이걸 붙여주기!
