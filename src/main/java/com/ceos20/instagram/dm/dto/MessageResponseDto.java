@@ -22,5 +22,7 @@ public class MessageResponseDto {
                 .readAt(message.getReadAt())
                 .senderId(message.getSender().getId())
                 .build();
+
+
     }
 }

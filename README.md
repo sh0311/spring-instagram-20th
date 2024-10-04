@@ -907,3 +907,48 @@ class PostServiceTest {
 - #### @Transactional(readOnly=true)
 
 조회 메소드에 사용한다. readOnly=true 속성을 사용하면, 트랜잭션 Commit 시 영속성 컨텍스트가 자동으로 flush 되지 않으므로 조회용으로 가져온 Entity의 예상치 못한 수정을 방지할 수 있고, JPA는 해당 트랜잭션 내에서 조회하는 Entity는 조회용임을 인식하고 변경 감지를 위한 Snapshot을 따로 보관하지 않으므로 메모리가 절약되는 이점 또한 존재한다고 한다. 따라서 조회용 메소드에는 이걸 붙여주기!
+
+
+# 3주차
+
+### 정적 팩토리 메소드
+
+객체를 인스턴스화 할 때 직접적으로 생성자를 호출하여 생성하지 않고, 별도의 객체 생성 역할을 하는 클래스의 static 메서드를 통해 간접적으로 객체 생성을 유도하는 방법이다.
+
+```
+    @AllArgsConstructor
+    @Getter
+    public class DmRoomResponseDto {
+        private Long id;
+        private String user2Nickname; //상대방닉네임
+        
+        public static DmRoomResponseDto of(DmRoom room,String otherUserNickname){
+            return new DmRoomResponseDto(room.getId(), otherUserNickname);   //필드 수가 적고 모든 필드를 이용해 객체 만들어서 생성자 이용
+        }
+    }
+
+```
+
+```
+public List<DmRoomResponseDto> getMyAllRooms(Long userId){
+        userService.findUserById(userId); //해당 id의 유저가 존재하는지 ㅔ크
+        //내가 참여한 모든 채팅방 조회
+        List<DmRoom> myRoomList=dmRoomRepository.findRoomsByUserIdOrderByUpdatedAtDesc(userId);
+        //채팅방 리스트 엔티티 -> dto로
+        List<DmRoomResponseDto> rooms=myRoomList.stream()
+                .map(room-> DmRoomResponseDto.of(room,findOtherUser(userId, room).getNickname()))
+                .toList();
+        return rooms;
+    }
+```
+
+- 장점 : 생성 목적에 대한 이름 표현이 가능해 변환될 객체의 특성을 유추하기 쉽다는 점 등 여러 장점이 있다.
+
+- 정적 팩토리 메서드 네이밍 규칙 
+    1) from : 하나의 매개변수를 받아 객체 생성
+    2) of : 여러 매개변수를 받아 객체 생성
+  
+
+### Global Exception
+
+- 사용하는 이유 : Controller 내에서 오류가 발생하면 HTTP Status 코드로 정상코드가 아니라 오류코드로 반환하게 되는데, 그러면 '실제 에러'가 발생해서 클라이언트 측에서 이를 어떻게 처리할지 혼란스러울 수 있다. 따라서 이런 처리를 통해 클라이언트가 이해할 수 있는 명확한 오류 응답을 보내기 위해 사용한다.

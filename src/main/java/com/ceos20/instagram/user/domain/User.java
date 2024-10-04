@@ -6,6 +6,7 @@ import com.ceos20.instagram.global.BaseTimeEntity;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.user.dto.UserRequestDto;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -32,6 +33,7 @@ public class User extends BaseTimeEntity {
 
     private String username;
 
+    @Email
     private String email;
 
     @NotNull

@@ -46,7 +46,7 @@ public class PostService {
         //User 객체 가져오기
         User user=userService.findUserById(userId);
         //post 엔티티 생성, 저장
-        Post newPost=postRequestDto.toPost(user);
+        Post newPost=postRequestDto.toEntity(user);
 
         //MultipartFile을 PostImage로 변환
         List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), newPost);
@@ -62,7 +62,7 @@ public class PostService {
     public List<PostResponseDto> getAllPostsByUser(Long userId){
         List<Post> userPosts=postRepository.findPostWithImageByUserId(userId);
         return userPosts.stream()
-                .map(PostResponseDto::of)
+                .map(PostResponseDto::from)
                 .toList();
     }
 
@@ -72,7 +72,7 @@ public class PostService {
         // 해당 id의 게시글 찾기
         Post target=postRepository.findPostWithImageByPostId(postId).orElseThrow(()->new IllegalArgumentException("해당 id의 게시글이 존재하지 않습니다."));
 
-        return PostResponseDto.of(target);
+        return PostResponseDto.from(target);
     }
 
 
@@ -86,7 +86,7 @@ public class PostService {
         //해당 유저들의 게시글 리스트
         List<Post> postList = postRepository.findPostsByUserIdsIn(followingIds);
         return postList.stream()
-                .map(PostResponseDto::of)
+                .map(PostResponseDto::from)
                 .toList();
     }
 
@@ -100,7 +100,7 @@ public class PostService {
         }
         List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), target);
         target.update(postRequestDto, images);
-        return PostResponseDto.of(target);
+        return PostResponseDto.from(target);
     }
 
     //특정 게시글 삭제

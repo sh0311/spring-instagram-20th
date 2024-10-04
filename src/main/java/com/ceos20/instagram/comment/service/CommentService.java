@@ -60,7 +60,7 @@ public class CommentService {
 
         List<Comment> parents=commentRepository.findParentsByPostId(postId);
         return parents.stream()
-                .map(CommentResponseDto::of)
+                .map(CommentResponseDto::from)
                 .toList();
     }
 
@@ -70,7 +70,7 @@ public class CommentService {
 
         List<Comment> childs=commentRepository.findChildsByParentId(parentCommentId);
         return childs.stream()
-                .map(CommentResponseDto::of)
+                .map(CommentResponseDto::from)
                 .toList();
     }
 

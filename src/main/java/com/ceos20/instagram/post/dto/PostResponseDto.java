@@ -20,7 +20,7 @@ public class PostResponseDto {
     private LocalDateTime createdAt;
 
     //entity -> dto
-    public static PostResponseDto of(Post post){
+    public static PostResponseDto from(Post post){
         List<String> imageUrls=post.getImages().stream()
                 .map(PostImage::getPostImageurl)
                 .toList();

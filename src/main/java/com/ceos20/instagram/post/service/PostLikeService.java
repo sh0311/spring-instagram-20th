@@ -72,7 +72,7 @@ public class PostLikeService {
     public List<PostLikeResponseDto> getPostLikeList(Long postId){
         List<PostLike> likes=postLikeRepository.findByPostId(postId);
         List<PostLikeResponseDto> responseDtos=likes.stream()
-                .map(PostLikeResponseDto::of)
+                .map(PostLikeResponseDto::from)
                 .toList();
         return responseDtos;
     }

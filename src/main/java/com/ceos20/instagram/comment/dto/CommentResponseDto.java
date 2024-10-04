@@ -13,7 +13,7 @@ public class CommentResponseDto {
     private Long postId;
     private Long userId;
 
-    public static CommentResponseDto of(Comment comment) {
+    public static CommentResponseDto from(Comment comment) {
         return CommentResponseDto.builder()
                 .id(comment.getId())
                 .likeNum(comment.getLikeNum())
@@ -21,5 +21,7 @@ public class CommentResponseDto {
                 .postId(comment.getPost().getId())
                 .userId(comment.getUser().getId())
                 .build();
+
+
     }
 }

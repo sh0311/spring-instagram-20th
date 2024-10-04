@@ -36,7 +36,8 @@ public class DmService {
         if(dmRoom==null){
             dmRoom=createRoom(sender, receiver);
         }
-        Message newMessage=messageRequestDto.toMessage(messageRequestDto, dmRoom); //연관관계 주인에 dmRoom 매핑
+        //dto->entity
+        Message newMessage=messageRequestDto.toEntity(messageRequestDto, dmRoom); //연관관계 주인에 dmRoom 매핑
 
         messageRepository.save(newMessage);
 
@@ -60,6 +61,7 @@ public class DmService {
 
 
     // 채팅방 나가기
+    @Transactional
     public void leaveRoom(Long userId, Long roomId){
         DmRoom targetRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new IllegalArgumentException("해당 id의 채팅방이 없습니다."));
         if(!targetRoom.isUserInRoom(userId)){

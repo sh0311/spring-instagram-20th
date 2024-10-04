@@ -11,7 +11,7 @@ public class MessageRequestDto {
     private User sender;
     private User receiver; //dmRoom이 생성되기 전일수도 있으니까 dmRoomId 대신 receiver의 id를 인자로 해서 채팅방 있나 확인
 
-    public Message toMessage(MessageRequestDto messageRequestDto, DmRoom dmRoom) {
+    public Message toEntity(MessageRequestDto messageRequestDto, DmRoom dmRoom) {
         return Message.builder()
                 .content(messageRequestDto.getContent())
                 .room(dmRoom)

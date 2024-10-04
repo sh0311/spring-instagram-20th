@@ -13,7 +13,7 @@ public class PostLikeResponseDto {
 
 
     //entity -> dto
-    public static PostLikeResponseDto of(PostLike like) {
+    public static PostLikeResponseDto from(PostLike like) {
         return PostLikeResponseDto.builder()
                 .postId(like.getPost().getId())
                 .userNickname(like.getUser().getNickname())

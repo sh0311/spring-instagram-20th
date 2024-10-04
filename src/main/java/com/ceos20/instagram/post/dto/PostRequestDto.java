@@ -18,8 +18,8 @@ public class PostRequestDto {
     private String content;
     private List<MultipartFile> images;  //클라이언트가 직접 파일을 업로드 할 때 스프링이 MultipartFile 클래스를 이용해 파일을 처리함
 
-
-    public Post toPost(User user){
+    //dto->entity
+    public Post toEntity(User user){
         return Post.builder()
                 .content(content)
                 .user(user)
