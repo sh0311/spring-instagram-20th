@@ -1076,4 +1076,16 @@ public class GlobalExceptionHandler {
     - 우리는 @RestController를 사용하고 있으므로 @RestControllerAdvice를 사용하면 된다.
 - @ExceptionHandler를 통해 어떤 클래스에 대한 처리를 할지 명시하고, 각 예외 클래스에 맞게 예외를 처리하여 클라이언트에게 응답을 보낸다.
 
-코드에 이 예외처리를 적용해보자
+#### Service에서 발생한 예외를 Global Exception Handler로 처리하도록 변경
+    @Transactional
+    public PostResponseDto updatePost(PostRequestDto postRequestDto,Long userId){
+        Post target=postRepository.findById(postRequestDto.getId()).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
+        if(!target.getUser().getId().equals(userId)){
+            throw new ForbiddenException(ExceptionCode.NOT_POST_OWNER);
+        }
+        List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), target);
+        target.update(postRequestDto, images);
+        return PostResponseDto.from(target);
+    }
+
+- Service에서 발생한 예외가 컨트롤러로 전달되고, 컨트롤러에서 예외가 발생했을 때 Global Exception Handler가 처리하게 된다.
