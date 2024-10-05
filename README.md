@@ -951,4 +951,129 @@ public List<DmRoomResponseDto> getMyAllRooms(Long userId){
 
 ### Global Exception
 
-- 사용하는 이유 : Controller 내에서 오류가 발생하면 HTTP Status 코드로 정상코드가 아니라 오류코드로 반환하게 되는데, 그러면 '실제 에러'가 발생해서 클라이언트 측에서 이를 어떻게 처리할지 혼란스러울 수 있다. 따라서 이런 처리를 통해 클라이언트가 이해할 수 있는 명확한 오류 응답을 보내기 위해 사용한다.
+- 사용하는 이유 : Controller 내에서 오류가 발생하면 HTTP Status 코드로 적절한 오류코드를 반환하게 되는데, 그러면 세부적인 서버 예외 정보인 '실제 에러'가 전달되어 클라이언트 측에서 어떤 오류인지 명확하게 이해하기 어려울 수 있다. 따라서 이런 처리를 통해 클라이언트가 이해할 수 있는 명확한 메시지와 상태코드로 오류 응답을 보내기 위해 사용한다.
+
+#### 1. ExceptionCode
+```
+@Getter
+public enum ExceptionCode {
+    NOT_FOUND_USER(HttpStatus.NOT_FOUND, "N001", "해당 id의 유저는 존재하지 않습니다."),
+    NOT_FOUND_POST(HttpStatus.NOT_FOUND, "N002", "해당 id의 게시글은 존재하지 않습니다."),
+    NOT_FOUND_Follow(HttpStatus.NOT_FOUND, "N003", "해당 팔로우 객체는 존재하지 않습니다."),
+    NOT_FOUND_ROOM(HttpStatus.NOT_FOUND, "N004", "해당 id의 채팅방은 존재하지 않습니다."),
+    NOT_FOUND_USER_IN_ROOM(HttpStatus.NOT_FOUND, "N005", "해당 id의 유저가 해당 채팅방에 존재하지 않습니다."),
+    NOT_FOUND_MESSAGE(HttpStatus.NOT_FOUND, "N006", "해당 id의 메시지는 존재하지 않습니다."),
+    NOT_FOUND_COMMENT(HttpStatus.NOT_FOUND, "N007", "해당 id의 댓글은 존재하지 않습니다."),
+    NOT_FOUND_PARENT_COMMENT(HttpStatus.NOT_FOUND, "N008", "해당 id의 부모댓글은 존재하지 않습니다."),
+    NOT_FOUND_POST_LIKE(HttpStatus.NOT_FOUND, "N009", "해당 게시글 좋아요는 존재하지 않습니다."),
+    NOT_FOUND_COMMENT_LIKE(HttpStatus.NOT_FOUND, "N010", "해당 댓글 좋아요는 존재하지 않습니다."),
+
+    NOT_POST_OWNER(HttpStatus.FORBIDDEN, "F001", "게시글 작성자가 아닙니다.");
+
+    private final HttpStatus status;
+    private final String divisionCode;
+    private final String message;
+
+    ExceptionCode(final HttpStatus status, final String divisionCode, final String message) {
+        this.status = status;
+        this.divisionCode = divisionCode;
+        this.message = message;
+    }
+
+}
+
+```
+
+- 여러 예외 상황에 대해 HttpStatus, 코드, 메시지를 enum 형태로 관리한다. 
+
+
+#### 2. 커스텀 예외 클래스 생성 (NotFoundException, ForbiddenException, ..)
+
+```
+public class NotFoundException extends RuntimeException{
+
+    private final ExceptionCode exceptionCode;
+
+    public NotFoundException(final ExceptionCode exceptionCode) {
+        super(exceptionCode.getMessage());
+        this.exceptionCode = exceptionCode;
+    }
+
+    public ExceptionCode getExceptionCode() {
+        return exceptionCode;
+    }
+}
+```
+
+- 사용자 정의 예외 클래스로, 클래스 이름만 봐도 어떤 오류가 발생했는지 알기 쉬워지며 RuntimeException을 상속하도록 구현하였다. 또한 HttpStatus 상태에 따라 커스텀 예외 클래스를 분리하였다. 
+    - cf) Runtime Exception을 상속받은 이유 : Runtime Excepion은 unCheckedException이기에 오류처리를 하지 않아도 컴파일에서 오류가 발생하지 않는다.
+- ExceptionCode를 인자로 받아 예외 발생 시 구체적인 예외 상황에 대한 메시지와 HTTP 상태 코드를 ExceptionCode에서 관리하도록 하였다.
+
+#### ExceptionResponse
+
+```
+public class ExceptionResponse {
+    private final HttpStatus httpStatus;
+    private final String divisionCode;
+    private final String message;
+
+    public ExceptionResponse(HttpStatus httpStatus, String divisionCode, String message) {
+        this.httpStatus = httpStatus;
+        this.divisionCode = divisionCode;
+        this.message = message;
+    }
+
+    //NotFound Exception 응답
+    public static ExceptionResponse of(NotFoundException exception) {
+        ExceptionCode code=exception.getExceptionCode();
+        return new ExceptionResponse(code.getStatus(), code.getDivisionCode(), exception.getMessage());
+    }
+
+    // ForbiddenException 응답
+    public static ExceptionResponse of(ForbiddenException exception) {
+        ExceptionCode code=exception.getExceptionCode();
+        return new ExceptionResponse(code.getStatus(), code.getDivisionCode(), exception.getMessage());
+    }
+}
+```
+
+- 클라이언트에게 보낼 에러 응답의 형식을 지정하는 클래스
+- 사용자 정의 클래스를 인자로 받아 그 예외에 맞는 Http 상태코드, 에러코드, 에러메시지를 일관된 형식으로 응답할 수 있게 해준다.
+
+
+#### GlobalExceptionHandler
+
+```
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+    //NotFound Exception
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleNotFoundException(NotFoundException e){
+        log.error(e.getMessage(),e);  //모든 예외 클래스는 Throwable 클래스를 상속받는다. Throwable 클래스에는 getMessage()라는 메서드가 이미 정의되어있다. 이 메서드는 예외가 발생할 때 생성자에서 전달된 예외 메시지를 반환하는 역할을 하기에 NotFoundException에는 @Geter가 없어도 getMessage() 사용가능 함.
+        final ExceptionResponse response=ExceptionResponse.from(e);
+        return ResponseEntity.status(NOT_FOUND).body(response);
+    }
+
+    //ForbiddenException
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ExceptionResponse> handleForbiddenException(ForbiddenException e){
+        log.error(e.getMessage(),e);
+        final ExceptionResponse response=ExceptionResponse.from(e);
+        return ResponseEntity.status(FORBIDDEN).body(response);
+    }
+}
+```
+
+- `@ControllerAdvice` or `@RestControllerAdvice`와 `@ExceptionHandler` 어노테이션을 기반으로, 전역적으로 컨트롤러에서 발생하는 예외를 한 곳에서 처리하고 일관된 형식의 응답 메시지로 클라이언트에게 예외 내용을 전달하는 기능
+
+- `@ControllerAdvice` vs `@RestControllerAdvice`
+
+    - @ControllerAdvice : @Controller에서 발생한 에러를 도중에 @ControllerAdvice로 선언한 클래스 내에서 이를 캐치하여 Controller 내에서 발생한 에러를 처리할 수 있도록 하는 어노테이션
+
+    - @RestControllerAdvice : @ControllerAdvice와 기능은 같지만, @Controller가 아니라 @RestController에서 발생한 에러를 처리하고 JSON 형식의 응답을 제공해주어 Restful API에서 사용된다.
+    - 우리는 @RestController를 사용하고 있으므로 @RestControllerAdvice를 사용하면 된다.
+- @ExceptionHandler를 통해 어떤 클래스에 대한 처리를 할지 명시하고, 각 예외 클래스에 맞게 예외를 처리하여 클라이언트에게 응답을 보낸다.
+
+코드에 이 예외처리를 적용해보자

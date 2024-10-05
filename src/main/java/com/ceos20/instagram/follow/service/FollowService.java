@@ -3,8 +3,10 @@ package com.ceos20.instagram.follow.service;
 import com.ceos20.instagram.follow.domain.Follow;
 import com.ceos20.instagram.follow.dto.FollowRequestDto;
 import com.ceos20.instagram.follow.repository.FollowRepository;
+import com.ceos20.instagram.global.exception.NotFoundException;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
+import com.ceos20.instagram.global.exception.ExceptionCode;
 
 import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +42,8 @@ public class FollowService {
         User sender=userService.findUserById(followRequestDto.getSenderId());
         User receiver=userService.findUserById(followRequestDto.getReceiverId());
 
-        Follow target=followRepository.findFollowByFollowingIdAndFollowerId(followRequestDto.getSenderId(), followRequestDto.getReceiverId()).orElseThrow(()->new IllegalArgumentException("해당 팔로우 객체가 존재하지 않습니다."));
+        Follow target=followRepository.findFollowByFollowingIdAndFollowerId(followRequestDto.getSenderId(), followRequestDto.getReceiverId())
+                .orElseThrow(()->new NotFoundException(ExceptionCode.NOT_FOUND_FOLLOW));
 
         target.approve();
 
@@ -52,7 +55,8 @@ public class FollowService {
     //팔로잉 취소하기
     @Transactional
     public void deleteFollowing(FollowRequestDto followRequestDto){
-        Follow follow=followRepository.findFollowByFollowingIdAndFollowerId(followRequestDto.getSenderId(), followRequestDto.getReceiverId()).orElseThrow(()->new IllegalArgumentException("해당 팔로우 객체가 존재하지 않습니다."));
+        Follow follow=followRepository.findFollowByFollowingIdAndFollowerId(followRequestDto.getSenderId(), followRequestDto.getReceiverId())
+                .orElseThrow(()->new NotFoundException(ExceptionCode.NOT_FOUND_FOLLOW));
 
         // 팔로우 객체 삭제
         followRepository.delete(follow);

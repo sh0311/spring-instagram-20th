@@ -4,6 +4,8 @@ import com.ceos20.instagram.comment.domain.Comment;
 import com.ceos20.instagram.comment.dto.CommentRequestDto;
 import com.ceos20.instagram.comment.dto.CommentResponseDto;
 import com.ceos20.instagram.comment.repository.CommentRepository;
+import com.ceos20.instagram.global.exception.ExceptionCode;
+import com.ceos20.instagram.global.exception.NotFoundException;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.post.service.PostService;
@@ -34,7 +36,7 @@ public class CommentService {
         Comment parent=null;
         //자식댓글 작성하는 경우
         if(commentRequestDto.getParentId()!=null) {
-            parent=commentRepository.findById(commentRequestDto.getParentId()).orElseThrow(()-> new IllegalArgumentException("해당 부모댓글이 존재하지 않습니다."));
+            parent=commentRepository.findById(commentRequestDto.getParentId()).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_PARENT_COMMENT));
         }
         
         Comment comment=Comment.builder()
@@ -50,7 +52,7 @@ public class CommentService {
     //댓글 삭제
     @Transactional
     public void deleteComment(Long commentId) {
-        Comment comment=commentRepository.findById(commentId).orElseThrow(()->new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
+        Comment comment=commentRepository.findById(commentId).orElseThrow(()->new NotFoundException(ExceptionCode.NOT_FOUND_COMMENT));
         commentRepository.delete(comment);
     }
 
@@ -66,7 +68,7 @@ public class CommentService {
 
     //특정 부모댓글의 자식댓글 조회
     public List<CommentResponseDto> getChildCommentsByParent(Long parentCommentId){
-        Comment parent=commentRepository.findById(parentCommentId).orElseThrow(()-> new IllegalArgumentException("해당 부모댓글이 존재하지 않습니다."));
+        Comment parent=commentRepository.findById(parentCommentId).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_PARENT_COMMENT));
 
         List<Comment> childs=commentRepository.findChildsByParentId(parentCommentId);
         return childs.stream()
@@ -75,7 +77,7 @@ public class CommentService {
     }
 
     public Comment findCommentById(Long commentId) {
-        return commentRepository.findById(commentId).orElseThrow(()-> new IllegalArgumentException("해당 id의 댓글이 존재하지 않습니다."));
+        return commentRepository.findById(commentId).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_COMMENT));
     }
 
     public void deleteCommentByPostId(Long postId) {

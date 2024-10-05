@@ -8,6 +8,8 @@ import com.ceos20.instagram.dm.dto.MessageRequestDto;
 import com.ceos20.instagram.dm.dto.MessageResponseDto;
 import com.ceos20.instagram.dm.repository.DmRoomRepository;
 import com.ceos20.instagram.dm.repository.MessageRepository;
+import com.ceos20.instagram.global.exception.ExceptionCode;
+import com.ceos20.instagram.global.exception.NotFoundException;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
 import com.ceos20.instagram.user.service.UserService;
@@ -63,9 +65,9 @@ public class DmService {
     // 채팅방 나가기
     @Transactional
     public void leaveRoom(Long userId, Long roomId){
-        DmRoom targetRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new IllegalArgumentException("해당 id의 채팅방이 없습니다."));
+        DmRoom targetRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new NotFoundException(ExceptionCode.NOT_FOUND_ROOM));
         if(!targetRoom.isUserInRoom(userId)){
-            throw new IllegalArgumentException("해당 id의 유저가 채팅방에 존재하지 않습니다");
+            throw new NotFoundException(ExceptionCode.NOT_FOUND_USER);
         }
         //유저가 채팅방에 존재하는 경우
         //떠나는 유저의 leaveTime 업데이트
@@ -95,7 +97,7 @@ public class DmService {
     // 내가 보낸 dm삭제
     @Transactional
     public void deleteMessage(Long messageId){
-        messageRepository.findById(messageId).orElseThrow(()->new IllegalArgumentException("해당 id의 메시지가 없습니다."));
+        messageRepository.findById(messageId).orElseThrow(()->new NotFoundException(ExceptionCode.NOT_FOUND_MESSAGE));
         messageRepository.deleteById(messageId);
     }
     
@@ -104,7 +106,7 @@ public class DmService {
     // 특정 dmRoom에 있는 메시지들 조회
     @Transactional  // updateIsRead보단 하나의 전체 프로세스를 관리하는 특정 서비스 메소드에 @Transactional 거는 게 좋다
     public List<MessageResponseDto> getMessagesInRoom(Long roomId, Long userId){
-        DmRoom dmRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new IllegalArgumentException("해당 id의 dm방이 없습니다."));
+        DmRoom dmRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new NotFoundException(ExceptionCode.NOT_FOUND_ROOM));
         userService.findUserById(userId);
         //해당 유저가 채팅방 나간시간 조회
         LocalDateTime userLeaveTime=userId.equals(dmRoom.getUser1().getId())?dmRoom.getUser1LeaveTime():dmRoom.getUser2LeaveTime();

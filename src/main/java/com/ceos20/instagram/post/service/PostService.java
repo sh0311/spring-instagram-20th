@@ -6,6 +6,9 @@ import com.ceos20.instagram.comment.service.CommentService;
 import com.ceos20.instagram.follow.domain.Follow;
 import com.ceos20.instagram.follow.repository.FollowRepository;
 import com.ceos20.instagram.follow.service.FollowService;
+import com.ceos20.instagram.global.exception.ExceptionCode;
+import com.ceos20.instagram.global.exception.ForbiddenException;
+import com.ceos20.instagram.global.exception.NotFoundException;
 import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.domain.PostImage;
 import com.ceos20.instagram.post.dto.PostRequestDto;
@@ -70,7 +73,7 @@ public class PostService {
     // 하나의 특정 게시글 조회
     public PostResponseDto getOnePost(Long postId){
         // 해당 id의 게시글 찾기
-        Post target=postRepository.findPostWithImageByPostId(postId).orElseThrow(()->new IllegalArgumentException("해당 id의 게시글이 존재하지 않습니다."));
+        Post target=postRepository.findPostWithImageByPostId(postId).orElseThrow(()->new NotFoundException(ExceptionCode.NOT_FOUND_POST));
 
         return PostResponseDto.from(target);
     }
@@ -94,9 +97,9 @@ public class PostService {
     // 특정 게시글 수정
     @Transactional
     public PostResponseDto updatePost(PostRequestDto postRequestDto,Long userId){
-        Post target=postRepository.findById(postRequestDto.getId()).orElseThrow(()-> new IllegalArgumentException("해당 id의 게시글이 없습니다."));
+        Post target=postRepository.findById(postRequestDto.getId()).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
         if(!target.getUser().getId().equals(userId)){
-            throw new IllegalStateException("게시글 작성자가 아닙니다.");
+            throw new ForbiddenException(ExceptionCode.NOT_POST_OWNER);
         }
         List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), target);
         target.update(postRequestDto, images);
@@ -106,7 +109,7 @@ public class PostService {
     //특정 게시글 삭제
     @Transactional
     public void deletePost(Long postId){
-        Post target=postRepository.findById(postId).orElseThrow(()-> new IllegalArgumentException("해당 id의 게시글이 없습니다."));
+        Post target=postRepository.findById(postId).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
         commentService.deleteCommentByPostId(postId);
         postLikeService.deletePostLikeByPostId(postId);
         postImageService.deleteImages(postId); //서버에 업로드한 이미지 삭제. db 말고. 구현예정
@@ -116,6 +119,6 @@ public class PostService {
     }
 
     public Post findPostById(Long postId){
-        return postRepository.findById(postId).orElseThrow(()->new IllegalArgumentException("해당 id의 스터디가 존재하지 않습니다."));
+        return postRepository.findById(postId).orElseThrow(()->new NotFoundException(ExceptionCode.NOT_FOUND_POST));
     }
 }
