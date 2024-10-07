@@ -8,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class DmRoomResponseDto {
-    private Long id;
+    private Long roomId;
     private String user2Nickname; //상대방닉네임
 
     public static DmRoomResponseDto of(DmRoom room,String otherUserNickname){

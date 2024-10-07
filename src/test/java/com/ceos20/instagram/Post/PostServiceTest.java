@@ -225,7 +225,6 @@ class PostServiceTest {
         Long userId=1L;
         Long postId=2L;
         PostRequestDto request= PostRequestDto.builder()
-                .id(postId)
                 .content("수정 게시글 2")
                 .images(new ArrayList<>())
                 .build();
@@ -236,7 +235,7 @@ class PostServiceTest {
                 .willReturn(new ArrayList<>());
 
         //when
-        PostResponseDto response=postService.updatePost(request,userId);
+        PostResponseDto response=postService.updatePost(postId, userId, request);
 
         //then
         assertEquals("수정 게시글 2", response.getContent()); // 게시글 내용이 수정되었는지 확인
@@ -264,7 +263,7 @@ class PostServiceTest {
         // 각 레포지토리와 서비스 메서드가 호출되었는지 검증
         verify(commentRepository).deleteByPostId(postId); // 댓글 삭제 검증
         verify(postLikeRepository).deleteByPostId(postId); // 좋아요 삭제 검증
-        verify(postImageService).deleteImages(postId); // 이미지 삭제 검증
+        verify(postImageService).deleteAllImages(postId); // 이미지 삭제 검증
         verify(postRepository).delete(post1); // 게시글 삭제 검증
     }
 

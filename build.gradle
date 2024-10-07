@@ -24,6 +24,9 @@ dependencies {
 	// @NotNull 같은 제약조건을 달아줄 수 있는 Bean Validation 사용 위해 설치
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	// Swagger UI 적용하기 위해 (Springdoc 라이브러리 사용)
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
+
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'

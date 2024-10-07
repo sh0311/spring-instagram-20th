@@ -908,6 +908,86 @@ class PostServiceTest {
 
 조회 메소드에 사용한다. readOnly=true 속성을 사용하면, 트랜잭션 Commit 시 영속성 컨텍스트가 자동으로 flush 되지 않으므로 조회용으로 가져온 Entity의 예상치 못한 수정을 방지할 수 있고, JPA는 해당 트랜잭션 내에서 조회하는 Entity는 조회용임을 인식하고 변경 감지를 위한 Snapshot을 따로 보관하지 않으므로 메모리가 절약되는 이점 또한 존재한다고 한다. 따라서 조회용 메소드에는 이걸 붙여주기!
 
+### Dto
+Request Dto에는 가능한 간단한 애들을 담아야 한다. 만약 RequestDto에 user_id가 아니라 user 객체를 포함하게 된다면 클라이언트는 해당 객체의 모든 필드를 사용해 데이터를 보내야 하므로 번거로워진다. 따라서 user_id와 같이 단순한 필드를 Request Dto에 포함시키면, 클라이언트는 user_id만 넣은 상태로 요청을 보낼 수 있어 작업이 간단해진다.
+```
+Getter
+public class MessageRequestDto {   //Dto에는 되도록 간단한 내용들 담기(user 대신 user_id)
+    private String content;
+    private Long senderId;
+    private Long receiverId; 
+```
+
+만약 User sender, User receiver를 포함하게 된다면 요청을 아래와 같은 형식으로 보내야 해서 매우 번거로워진다.
+```
+{
+  "content": "string",
+  "sender": {
+    "createdAt": "2024-10-07T08:49:07.227Z",
+    "updatedAt": "2024-10-07T08:49:07.227Z",
+    "id": 0,
+    "nickname": "string",
+    "username": "string",
+    "email": "string",
+    "password": "string",
+    "introduce": "string",
+    "profileImageurl": "string",
+    "status": "ACTIVE",
+    "followerCount": 0,
+    "followingCount": 0,
+    "posts": [
+      {
+        "createdAt": "2024-10-07T08:49:07.227Z",
+        "updatedAt": "2024-10-07T08:49:07.227Z",
+        "id": 0,
+        "content": "string",
+        "likeNum": 0,
+        "user": "string",
+        "images": [
+          {
+            "id": 0,
+            "postImageurl": "string",
+            "post": "string"
+          }
+        ]
+      }
+    ],
+    "public": true
+  },
+  "receiver": {
+    "createdAt": "2024-10-07T08:49:07.227Z",
+    "updatedAt": "2024-10-07T08:49:07.227Z",
+    "id": 0,
+    "nickname": "string",
+    "username": "string",
+    "email": "string",
+    "password": "string",
+    "introduce": "string",
+    "profileImageurl": "string",
+    "status": "ACTIVE",
+    "followerCount": 0,
+    "followingCount": 0,
+    "posts": [
+      {
+        "createdAt": "2024-10-07T08:49:07.227Z",
+        "updatedAt": "2024-10-07T08:49:07.227Z",
+        "id": 0,
+        "content": "string",
+        "likeNum": 0,
+        "user": "string",
+        "images": [
+          {
+            "id": 0,
+            "postImageurl": "string",
+            "post": "string"
+          }
+        ]
+      }
+    ],
+    "public": true
+  }
+}
+```
 
 # 3주차
 
@@ -1009,7 +1089,7 @@ public class NotFoundException extends RuntimeException{
     - cf) Runtime Exception을 상속받은 이유 : Runtime Excepion은 unCheckedException이기에 오류처리를 하지 않아도 컴파일에서 오류가 발생하지 않는다.
 - ExceptionCode를 인자로 받아 예외 발생 시 구체적인 예외 상황에 대한 메시지와 HTTP 상태 코드를 ExceptionCode에서 관리하도록 하였다.
 
-#### ExceptionResponse
+#### 3. ExceptionResponse
 
 ```
 public class ExceptionResponse {
@@ -1039,9 +1119,9 @@ public class ExceptionResponse {
 
 - 클라이언트에게 보낼 에러 응답의 형식을 지정하는 클래스
 - 사용자 정의 클래스를 인자로 받아 그 예외에 맞는 Http 상태코드, 에러코드, 에러메시지를 일관된 형식으로 응답할 수 있게 해준다.
+- @Getter를 붙여야 GlobalExceptionHandler에서 Response body에 exceptionResponse를 JSON으로 직렬화할 때, getter 메소드를 통해 필드 값을 가져올 수 있다. 이 어노테이션을 적용해야 Postman에서 커스텀 예외 메시지가 응답으로 나타난다.
 
-
-#### GlobalExceptionHandler
+#### 4. GlobalExceptionHandler
 
 ```
 @RestControllerAdvice
@@ -1076,7 +1156,7 @@ public class GlobalExceptionHandler {
     - 우리는 @RestController를 사용하고 있으므로 @RestControllerAdvice를 사용하면 된다.
 - @ExceptionHandler를 통해 어떤 클래스에 대한 처리를 할지 명시하고, 각 예외 클래스에 맞게 예외를 처리하여 클라이언트에게 응답을 보낸다.
 
-#### Service에서 발생한 예외를 Global Exception Handler로 처리하도록 변경
+#### 5. Service에서 발생한 예외를 Global Exception Handler로 처리하도록 변경
     @Transactional
     public PostResponseDto updatePost(PostRequestDto postRequestDto,Long userId){
         Post target=postRepository.findById(postRequestDto.getId()).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
@@ -1089,3 +1169,65 @@ public class GlobalExceptionHandler {
     }
 
 - Service에서 발생한 예외가 컨트롤러로 전달되고, 컨트롤러에서 예외가 발생했을 때 Global Exception Handler가 처리하게 된다.
+
+
+### 이미지 업로드 관련
+
+#### postman에서는 form data형식에서 file을 선택하여 이미지 업로드 할 수 있지만, Swagger에서는 별도로 설정을 해주어야 한다.
+` @PutMapping(value="/{postId}/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE) `
+
+#### @ModelAttribute
+이미지파일 업로드 시에는 Content-Type이 **application/json**가 아니라 **multipart/form-data** 이어야 한다. 하지만, @RequestBody는 application/json 형식의 데이터를 처리하므로, multipart/form-data 형식을 처리할 수 없다. 따라서 Swagger나 Postman에서 파일을 업로드하려면 multipart/form-data 형식을 사용해야 하고, 이를 처리하기 위해서는 @RequestBody 대신 **@ModelAttribute**를 사용하여 PostRequestDto를 받아야 한다.
+
+```
+    // 게시글 생성
+    @PostMapping(value="/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)   //Swagger에서 MultipartFile을 받게 하기 위해
+    public ResponseEntity<Void> createPost(@ModelAttribute PostRequestDto postRequestDto, @PathVariable Long userId){
+        postService.createPost(postRequestDto, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+```
+
+### 게시글 수정부분 오류 : "A collection with cascade="all-delete-orphan" was no longer referenced by the owning entity instance"
+게시글 수정 구현할 때 기존에는 Post 엔티티의 images 필드를 새로운 이미지로 교체를 해버리도록 코드를 짰다.
+```
+    @Transactional
+    public PostResponseDto updatePost(PostRequestDto postRequestDto,Long userId){
+        Post target=postRepository.findById(postRequestDto.getId()).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
+        if(!target.getUser().getId().equals(userId)){
+            throw new ForbiddenException(ExceptionCode.NOT_POST_OWNER);
+        }
+        List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), target);
+        target.update(postRequestDto, images);
+        return PostResponseDto.from(target);
+    }
+```
+```
+    public void update(PostRequestDto postRequestDto,List<PostImage> images) {
+        this.content=postRequestDto.getContent();
+        this.images=images;
+    }
+```
+그랬더니 `"A collection with cascade="all-delete-orphan" was no longer referenced by the owning entity instance"`라는 오류가 떴다. images는 새로 생성한 애인데, 새로 생성한 친구는 hibernate가 관리하지 않아 문제가 된다고 한다. 따라서 기존의 images를 바꾸고 싶으면 샤로운 list를 만들어서 기존 것과 바꾸지 말고 `기존의 list를 clear 한 후, add` 해주는 식으로 업데이트 해야한다!
+```
+@Transactional
+    public PostResponseDto updatePost(Long postId, Long userId, PostRequestDto postRequestDto){
+        Post target=postRepository.findById(postId).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
+        //게시글 작성자인지 체크
+        if(!target.getUser().getId().equals(userId)){
+            throw new ForbiddenException(ExceptionCode.NOT_POST_OWNER);
+        }
+
+        List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), target);
+        
+        target.getImages().clear();
+        target.update(postRequestDto, images);
+        return PostResponseDto.from(target);
+    }
+```
+```
+    public void update(PostRequestDto postRequestDto,List<PostImage> images) {
+        this.content=postRequestDto.getContent();
+        this.images.addAll(images);
+    }
+```

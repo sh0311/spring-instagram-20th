@@ -4,6 +4,7 @@ import com.ceos20.instagram.global.BaseTimeEntity;
 import com.ceos20.instagram.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @AllArgsConstructor
+@Slf4j
 public class DmRoom extends BaseTimeEntity { //최근에 채팅이 오거나 보낸 채팅방 순으로 저열되어야 하므로 updated_at 필요함
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,7 +41,10 @@ public class DmRoom extends BaseTimeEntity { //최근에 채팅이 오거나 보
     }
 
     public boolean isUserInRoom(Long userId){
-        return (userId.equals(user1.getId())||userId.equals(user2.getId()));
+        log.debug("room id: "+id);
+        log.debug("user1 id: "+user1.getId());
+        log.debug("user2 id: "+user2.getId());
+        return (user1!=null && userId.equals(this.user1.getId())||user2!=null && userId.equals(this.user2.getId()));
     }
 
     public void updateLeaveTime(Long userId){

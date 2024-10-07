@@ -5,8 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
 @Slf4j
@@ -26,5 +25,13 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage(),e);
         final ExceptionResponse response=ExceptionResponse.from(e);
         return ResponseEntity.status(FORBIDDEN).body(response);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ExceptionResponse> handleBadRequestException(BadRequestException e){
+        log.error(e.getMessage(),e);
+        final ExceptionResponse response=ExceptionResponse.from(e);
+        return ResponseEntity.status(BAD_REQUEST).body(response);
+
     }
 }

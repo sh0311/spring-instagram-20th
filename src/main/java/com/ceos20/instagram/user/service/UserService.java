@@ -19,7 +19,11 @@ public class UserService {
     private final UserRepository userRepository;
 
     // 회원가입
-
+    @Transactional
+    public void createUser(UserRequestDto userRequestDto) {
+        User user=userRequestDto.toEntity();
+        userRepository.save(user);
+    }
 
     // user 한 명 조회
     public UserResponseDto getUser(Long userId){
@@ -44,4 +48,5 @@ public class UserService {
     public void saveUser(User user){
         userRepository.save(user);
     }
+
 }

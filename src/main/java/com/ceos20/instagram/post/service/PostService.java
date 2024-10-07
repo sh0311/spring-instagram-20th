@@ -38,8 +38,9 @@ public class PostService {
     private final UserService userService;
     private final PostImageService postImageService;
     private final FollowService followService;
-    private final PostLikeService postLikeService;
-    private final CommentService commentService;
+    //순환참조 막기 위해 repository 사용
+    private final PostLikeRepository postLikeRepository;
+    private final CommentRepository commentRepository;
 
 
     // 게시글 생성
@@ -96,12 +97,22 @@ public class PostService {
 
     // 특정 게시글 수정
     @Transactional
-    public PostResponseDto updatePost(PostRequestDto postRequestDto,Long userId){
-        Post target=postRepository.findById(postRequestDto.getId()).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
+    public PostResponseDto updatePost(Long postId, Long userId, PostRequestDto postRequestDto){
+        Post target=postRepository.findById(postId).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
+        //게시글 작성자인지 체크
         if(!target.getUser().getId().equals(userId)){
             throw new ForbiddenException(ExceptionCode.NOT_POST_OWNER);
         }
+        /*
+        //삭제된 이미지 있다면 삭제
+        postImageService.deleteImagesUpdatePost(target.getImages(), postRequestDto.getImages());
+        //추가된 이미지 있다면 추가
+        postImageService.saveImagesUpdatePost(target.getImages(), postRequestDto.getImages());
+        */
+
         List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), target);
+
+        target.getImages().clear();
         target.update(postRequestDto, images);
         return PostResponseDto.from(target);
     }
@@ -110,9 +121,9 @@ public class PostService {
     @Transactional
     public void deletePost(Long postId){
         Post target=postRepository.findById(postId).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
-        commentService.deleteCommentByPostId(postId);
-        postLikeService.deletePostLikeByPostId(postId);
-        postImageService.deleteImages(postId); //서버에 업로드한 이미지 삭제. db 말고. 구현예정
+        commentRepository.deleteByPostId(postId);
+        postLikeRepository.deleteByPostId(postId);
+        postImageService.deleteAllImages(postId); //서버에 업로드한 이미지 삭제. db 말고. 구현예정
 
         //CascadeType.ALL에 의해 PostImage도 같이 삭제됨
         postRepository.delete(target);

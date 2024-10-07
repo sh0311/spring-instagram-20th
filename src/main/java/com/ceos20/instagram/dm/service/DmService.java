@@ -32,14 +32,14 @@ public class DmService {
     @Transactional
     public void sendMessage(MessageRequestDto messageRequestDto){
         //방이 안만들어져있다면 방 생성하기(DmRoomService 메소드 호출)
-        User sender=messageRequestDto.getSender();
-        User receiver=messageRequestDto.getReceiver();
-        DmRoom dmRoom=dmRoomRepository.findByUser1AndUser2(sender, receiver).orElse(null);
+        User sender=userService.findUserById(messageRequestDto.getSenderId());
+        User receiver=userService.findUserById(messageRequestDto.getReceiverId());
+        DmRoom dmRoom=dmRoomRepository.findByUsers(sender, receiver).orElse(null);
         if(dmRoom==null){
             dmRoom=createRoom(sender, receiver);
         }
         //dto->entity
-        Message newMessage=messageRequestDto.toEntity(messageRequestDto, dmRoom); //연관관계 주인에 dmRoom 매핑
+        Message newMessage=messageRequestDto.toEntity(messageRequestDto, dmRoom, sender); //연관관계 주인에 dmRoom 매핑
 
         messageRepository.save(newMessage);
 
@@ -64,7 +64,7 @@ public class DmService {
 
     // 채팅방 나가기
     @Transactional
-    public void leaveRoom(Long userId, Long roomId){
+    public void leaveRoom(Long roomId, Long userId){
         DmRoom targetRoom=dmRoomRepository.findById(roomId).orElseThrow(()->new NotFoundException(ExceptionCode.NOT_FOUND_ROOM));
         if(!targetRoom.isUserInRoom(userId)){
             throw new NotFoundException(ExceptionCode.NOT_FOUND_USER);

@@ -3,6 +3,7 @@ package com.ceos20.instagram.follow.service;
 import com.ceos20.instagram.follow.domain.Follow;
 import com.ceos20.instagram.follow.dto.FollowRequestDto;
 import com.ceos20.instagram.follow.repository.FollowRepository;
+import com.ceos20.instagram.global.exception.BadRequestException;
 import com.ceos20.instagram.global.exception.NotFoundException;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.repository.UserRepository;
@@ -27,6 +28,9 @@ public class FollowService {
     public void createFollow(FollowRequestDto followRequestDto){
         User sender=userService.findUserById(followRequestDto.getSenderId());
         User receiver=userService.findUserById(followRequestDto.getReceiverId());
+        
+        //이미 팔로우 신청한 거 아닌지 체크
+        isCommentLikeExist(sender.getId(), receiver.getId());
 
         Follow newFollow=Follow.builder()
                 .following(sender)
@@ -35,6 +39,12 @@ public class FollowService {
 
         followRepository.save(newFollow);
     }
+    private void isCommentLikeExist(Long senderId, Long receiverId){
+        if(followRepository.findFollowByFollowingIdAndFollowerId(senderId, receiverId).isPresent()){
+            throw new BadRequestException(ExceptionCode.ALREADY_EXIST_COMMENT_LIKE);
+        }
+    }
+
 
     //팔로우 승인하기
     @Transactional
