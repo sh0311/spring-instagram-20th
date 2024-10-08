@@ -1170,6 +1170,48 @@ public class GlobalExceptionHandler {
 
 - Service에서 발생한 예외가 컨트롤러로 전달되고, 컨트롤러에서 예외가 발생했을 때 Global Exception Handler가 처리하게 된다.
 
+#### `@Valid` 예외처리
+
+@Valid 어노테이션을 붙여 RequestDto의 입력으로 들어온 필드값들이 유효한지 검사를 할 수 있다. 
+```
+@Getter
+public class UserRequestDto {  
+    @NotBlank(message="닉네임은 필수 입력값입니다.")
+    @Size(min=1, max=30, message="닉네임은 1-30글자입니다.")
+    private String nickname;
+
+    private String username;
+
+    @Email(message="이메일 형식이어야합니다.")
+    private String email;
+
+    private String password;
+    private String introduce;
+    private String profileImageurl;
+    private UserStatus status;
+```
+이때 유효성 검사가 실패하면 MethodArgumentNotValidException라는 예외가 발생하게 된다. 이 예외는 앞선 예외들과 달리 Spring Framework에서 제공하는 내장 예외 클래스이므로 NotFoundException과 같이 커슽텀 클래스를 굳이 만들어줄 필요가 없다. 따라서 커스텀 예외 클래스나 Exception Code를 만들지 않고 바로 GlobalExceptionHandler에서 내가 만든 message를 response로 응답 보내도록 처리했다.
+```
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
+        log.error(e.getMessage(),e);
+        return ResponseEntity.status(BAD_REQUEST).body(e.getBindingResult().getFieldErrors().get(0).getDefaultMessage());  
+    }
+}
+
+```
+
+- `e.getBindingResult().getFieldErrors().get(0).getDefaultMessage()` 
+    - getBindingResult() : 유효성 검사 중 발생한 모든 오류 정보를 담고 있는 객체를 반환한다.
+    - getFieldErrors() : 필드 유효성 검사 오류 목록(각 필드의 유효성 검사 실패 정보가 담긴 목록)을 반환한다.
+    - get(0) : 첫 번째 오류만 가져온다.
+    - getDefaultMessage() : 해당 필드 오류에 대한 오류 메시지를 반환한다. `@Email(message="이메일 형식이어야합니다.")` 예를 들어, `@Email(message="이메일 형식이어야 합니다.")`에서 `message` 부분에 설정한 문자열이 오류 메시지로 반환된다.
+  
+이렇게 처리한다면, 예외가 발생한다면 `이메일 형식이어야합니다.`가 클라이언트에게 응답으로 반환되게 된다.
 
 ### 이미지 업로드 관련
 
@@ -1231,3 +1273,5 @@ public class GlobalExceptionHandler {
         this.images.addAll(images);
     }
 ```
+
+

@@ -18,7 +18,9 @@ public enum ExceptionCode {
 
     NOT_POST_OWNER(HttpStatus.FORBIDDEN, "F001", "게시글 작성자가 아닙니다."),
 
-    ALREADY_EXIST_COMMENT_LIKE(HttpStatus.BAD_REQUEST, "B001","이미 좋아요를 누른 댓글입니다.");
+    ALREADY_EXIST_COMMENT_LIKE(HttpStatus.BAD_REQUEST, "B001","이미 좋아요를 누른 댓글입니다."),
+    ALREADY_EXIST_NICKNAME(HttpStatus.BAD_REQUEST, "B002", "이미 존재하는 닉네임입니다."),
+    ALREADY_EXIST_EMAIL(HttpStatus.BAD_REQUEST, "B003", "이미 존재하는 이메일입니다.");
 
     private final HttpStatus status;
     private final String divisionCode;

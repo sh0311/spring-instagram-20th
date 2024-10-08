@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class UserController {
             @ApiResponse(responseCode="201", description="유저 생성 성공"),
             @ApiResponse(responseCode="400", description="유저 생성 실패")
     })
-    public ResponseEntity<Void> createUser(@RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<Void> createUser(@RequestBody @Valid UserRequestDto userRequestDto) {
         userService.createUser(userRequestDto);
         return ResponseEntity.ok().build();
     }

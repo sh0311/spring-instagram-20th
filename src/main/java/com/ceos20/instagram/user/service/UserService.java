@@ -1,5 +1,6 @@
 package com.ceos20.instagram.user.service;
 
+import com.ceos20.instagram.global.exception.BadRequestException;
 import com.ceos20.instagram.global.exception.ExceptionCode;
 import com.ceos20.instagram.global.exception.NotFoundException;
 import com.ceos20.instagram.user.domain.User;
@@ -21,8 +22,21 @@ public class UserService {
     // 회원가입
     @Transactional
     public void createUser(UserRequestDto userRequestDto) {
+        validateNickname(userRequestDto.getNickname());
         User user=userRequestDto.toEntity();
         userRepository.save(user);
+    }
+    //닉네임 중복 검사
+    private void validateNickname(String nickname) {
+        if(userRepository.existsByNickname(nickname)){
+            throw new BadRequestException(ExceptionCode.ALREADY_EXIST_NICKNAME);
+        }
+    }
+    //닉네임 중복검사
+    private void validateEmail(String email) {
+        if(userRepository.existsByEmail(email)){
+            throw new BadRequestException(ExceptionCode.ALREADY_EXIST_EMAIL);
+        }
     }
 
     // user 한 명 조회
