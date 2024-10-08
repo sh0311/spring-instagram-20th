@@ -45,9 +45,10 @@ public class Post extends BaseTimeEntity {
         this.images=images;
     }
 
-    public void update(PostRequestDto postRequestDto,List<PostImage> images) {
+    public void update(PostRequestDto postRequestDto,List<PostImage> newImages, List<PostImage> deletedImages) {
         this.content=postRequestDto.getContent();
-        this.images.addAll(images);
+        this.images.removeAll(deletedImages);
+        this.images.addAll(newImages);
     }
 
     public void increaseLikeNum(){

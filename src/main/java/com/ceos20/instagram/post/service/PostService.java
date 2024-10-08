@@ -23,6 +23,7 @@ import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,17 +104,21 @@ public class PostService {
         if(!target.getUser().getId().equals(userId)){
             throw new ForbiddenException(ExceptionCode.NOT_POST_OWNER);
         }
-        /*
-        //삭제된 이미지 있다면 삭제
-        postImageService.deleteImagesUpdatePost(target.getImages(), postRequestDto.getImages());
-        //추가된 이미지 있다면 추가
-        postImageService.saveImagesUpdatePost(target.getImages(), postRequestDto.getImages());
-        */
 
-        List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), target);
+        //삭제된 이미지 있다면 삭제 (s3+db)
+        List<PostImage> deleteImages=postImageService.deleteImagesUpdatePost(target.getImages(), postRequestDto.getImages());
+        //추가된 이미지 있다면 추가 (s3만)
+        List<MultipartFile> imagesToAdd = postImageService.saveImagesUpdatePost(target.getImages(), postRequestDto.getImages());
 
-        target.getImages().clear();
-        target.update(postRequestDto, images);
+
+        //Multipart -> PostImage & PostImage를 Post와 관계 맺어주기
+        List<PostImage> newImages=postImageService.changeToPostImage(imagesToAdd, target);
+
+        postImageService.saveImagesToDb(newImages); //db에 postImage 저장
+
+        //post와 매핑된 postImageList 변경
+        target.update(postRequestDto, newImages, deleteImages);
+
         return PostResponseDto.from(target);
     }
 

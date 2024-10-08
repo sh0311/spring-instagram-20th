@@ -1235,10 +1235,7 @@ public class GlobalExceptionHandler {
 ```
     @Transactional
     public PostResponseDto updatePost(PostRequestDto postRequestDto,Long userId){
-        Post target=postRepository.findById(postRequestDto.getId()).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
-        if(!target.getUser().getId().equals(userId)){
-            throw new ForbiddenException(ExceptionCode.NOT_POST_OWNER);
-        }
+        
         List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), target);
         target.update(postRequestDto, images);
         return PostResponseDto.from(target);
@@ -1250,28 +1247,33 @@ public class GlobalExceptionHandler {
         this.images=images;
     }
 ```
-그랬더니 `"A collection with cascade="all-delete-orphan" was no longer referenced by the owning entity instance"`라는 오류가 떴다. images는 새로 생성한 애인데, 새로 생성한 친구는 hibernate가 관리하지 않아 문제가 된다고 한다. 따라서 기존의 images를 바꾸고 싶으면 샤로운 list를 만들어서 기존 것과 바꾸지 말고 `기존의 list를 clear 한 후, add` 해주는 식으로 업데이트 해야한다!
+그랬더니 `"A collection with cascade="all-delete-orphan" was no longer referenced by the owning entity instance"`라는 오류가 떴다. images는 새로 생성한 애인데, 새로 생성한 친구는 hibernate가 관리하지 않아 문제가 된다고 한다. 따라서 기존의 images를 바꾸고 싶으면 새로운 list를 만들어서 기존 것과 `바꾸지 말고` `기존의 list에서 필요 없는 부분을 remove로 제거해준 후, 추가해야하는 부분을 add` 하는 식으로 업데이트 해야한다!
 ```
-@Transactional
+         @Transactional
     public PostResponseDto updatePost(Long postId, Long userId, PostRequestDto postRequestDto){
-        Post target=postRepository.findById(postId).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
-        //게시글 작성자인지 체크
-        if(!target.getUser().getId().equals(userId)){
-            throw new ForbiddenException(ExceptionCode.NOT_POST_OWNER);
-        }
 
-        List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), target);
+        //삭제된 이미지 있다면 삭제
+        List<PostImage> deleteImages=postImageService.deleteImagesUpdatePost(target.getImages(), postRequestDto.getImages());
+        //추가된 이미지 있다면 추가
+        List<MultipartFile> imagesToAdd = postImageService.saveImagesUpdatePost(target.getImages(), postRequestDto.getImages());
         
-        target.getImages().clear();
-        target.update(postRequestDto, images);
+        
+        List<PostImage> newImages=postImageService.changeToPostImage(imagesToAdd, target);  
+        
+        postImageService.saveImagesToDb(newImages); //db에 postImage 저장
+
+        //post와 매핑된 postImageList 변경
+        target.update(postRequestDto, newImages, deleteImages);
+
         return PostResponseDto.from(target);
     }
 ```
 ```
-    public void update(PostRequestDto postRequestDto,List<PostImage> images) {
+      public void update(PostRequestDto postRequestDto,List<PostImage> newImages, List<PostImage> deletedImages) {
         this.content=postRequestDto.getContent();
-        this.images.addAll(images);
-    }
+        this.images.removeAll(deletedImages);
+        this.images.addAll(newImages);
+      }
 ```
 
 

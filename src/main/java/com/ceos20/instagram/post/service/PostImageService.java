@@ -28,8 +28,10 @@ public class PostImageService {
         List<PostImage> newImages= images.stream()
                 .map(image -> {
                     String url=saveImage(image);
+
                     return PostImage.builder()
                             .postImageurl(url)
+                            .originalFileName(image.getOriginalFilename())
                             .post(post)  //연관관계의 주인인 postImage를 post와 연관관계를 설정해줘야 postImage에 post의 id가 외래키로 제대로 저장됨
                             .build();
 
@@ -49,47 +51,64 @@ public class PostImageService {
         return "Temp post image url";
     }
 
-    //서버에 업로드한 이미지 삭제 (공부하고 나서 나중에 구현)
+    //s3에 업로드한 이미지 s3에서 삭제(여기서는 db에서 삭제 안함) (공부하고 나서 나중에 구현)
     @Transactional
     public void deleteAllImages(Long postId) {
-
+        List<PostImage> images=postImageRepository.findAllPostImageByPostId(postId);
+        for(PostImage image:images){
+            deleteImage(image);
+        }
     }
-    //하나의 이미지 삭제
-    @Transactional
-    public void deleteImage(PostImage postImage){
+    //하나의 이미지 s3에서 삭제
+    private void deleteImage(PostImage postImage){
         //s3에서 삭제
 
 
-        postImageRepository.delete(postImage);
+
     }
 
-    /*
+
 
     //게시글 수정 시, 삭제된 이미지 s3, db에서 삭제하기
     @Transactional
-    public void deleteImagesUpdatePost(List<PostImage> currentImages, List<MultipartFile> newImages) {
+    public List<PostImage> deleteImagesUpdatePost(List<PostImage> currentImages, List<MultipartFile> newImages) {
 
         List<String> newImageNames=newImages.stream()
                 .map(MultipartFile::getOriginalFilename)
                 .toList();
 
         List<PostImage> imagesToDelete=currentImages.stream()
-                .filter(postImage -> !newImageNames.contains(extractFileNameFromUrl(postImage.getPostImageurl())))
+                .filter(postImage -> !newImageNames.contains(postImage.getOriginalFileName()))
                 .toList();
 
         for(PostImage postImage:imagesToDelete){
-            deleteImage(postImage);
+            deleteImage(postImage);  //s3에서 이미지 삭제
+            postImageRepository.delete(postImage);
         }
+        return imagesToDelete;
     }
 
-    private String extractFileNameFromUrl(String postImageurl) {
-        return postImageurl.substring(postImageurl.lastIndexOf("/") + 1);  // URL에서 파일 이름만 추출
-    }
 
     //게시글 수정 시, 추가된 이미지 s3, db에 저장하기
     @Transactional
-    public void saveImagesUpdatePost(List<PostImage> currentImages, List<MultipartFile> newImages){
+    public List<MultipartFile> saveImagesUpdatePost(List<PostImage> currentImages, List<MultipartFile> newImages){
+        List<String> currentImageNames=currentImages.stream()
+                .map(PostImage::getOriginalFileName)
+                .toList();
 
+        List<MultipartFile> imagesToAdd=newImages.stream()
+                .filter(newImage->!currentImageNames.contains(newImage.getOriginalFilename()))
+                .toList();
+
+        for(MultipartFile image:imagesToAdd){
+            saveImage(image);
+        }
+
+        return imagesToAdd;
     }
-*/
+
+    @Transactional
+    public void saveImagesToDb(List<PostImage> images) {
+        postImageRepository.saveAll(images);
+    }
 }
