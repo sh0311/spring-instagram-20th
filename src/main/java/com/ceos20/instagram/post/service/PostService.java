@@ -107,14 +107,14 @@ public class PostService {
 
         //삭제된 이미지 있다면 삭제 (s3+db)
         List<PostImage> deleteImages=postImageService.deleteImagesUpdatePost(target.getImages(), postRequestDto.getImages());
-        //추가된 이미지 있다면 추가 (s3만)
+        //새로 추가되어야 하는 이미지 리스트 반환
         List<MultipartFile> imagesToAdd = postImageService.saveImagesUpdatePost(target.getImages(), postRequestDto.getImages());
 
 
-        //Multipart -> PostImage & PostImage를 Post와 관계 맺어주기
+        //Multipart -> PostImage & PostImage를 Post와 관계 맺어주기 & S3에 추가된 이미지들만 저장
         List<PostImage> newImages=postImageService.changeToPostImage(imagesToAdd, target);
 
-        postImageService.saveImagesToDb(newImages); //db에 postImage 저장
+        postImageService.saveImagesToDb(newImages); //db에 새로 추가된 postImage 저장
 
         //post와 매핑된 postImageList 변경
         target.update(postRequestDto, newImages, deleteImages);
@@ -128,7 +128,7 @@ public class PostService {
         Post target=postRepository.findById(postId).orElseThrow(()-> new NotFoundException(ExceptionCode.NOT_FOUND_POST));
         commentRepository.deleteByPostId(postId);
         postLikeRepository.deleteByPostId(postId);
-        postImageService.deleteAllImages(postId); //서버에 업로드한 이미지 삭제. db 말고. 구현예정
+        postImageService.deleteAllImages(postId); // s3에서 이미지 삭제. db 말고.
 
         //CascadeType.ALL에 의해 PostImage도 같이 삭제됨
         postRepository.delete(target);

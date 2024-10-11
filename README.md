@@ -991,7 +991,7 @@ public class MessageRequestDto {   //Dto에는 되도록 간단한 내용들 담
 
 # 3주차
 
-### 정적 팩토리 메소드
+### 📍 정적 팩토리 메소드
 
 객체를 인스턴스화 할 때 직접적으로 생성자를 호출하여 생성하지 않고, 별도의 객체 생성 역할을 하는 클래스의 static 메서드를 통해 간접적으로 객체 생성을 유도하는 방법이다.
 
@@ -1029,7 +1029,7 @@ public List<DmRoomResponseDto> getMyAllRooms(Long userId){
     2) of : 여러 매개변수를 받아 객체 생성
   
 
-### Global Exception
+### 📍 Global Exception
 
 - 사용하는 이유 : Controller 내에서 오류가 발생하면 HTTP Status 코드로 적절한 오류코드를 반환하게 되는데, 그러면 세부적인 서버 예외 정보인 '실제 에러'가 전달되어 클라이언트 측에서 어떤 오류인지 명확하게 이해하기 어려울 수 있다. 따라서 이런 처리를 통해 클라이언트가 이해할 수 있는 명확한 메시지와 상태코드로 오류 응답을 보내기 위해 사용한다.
 
@@ -1170,7 +1170,7 @@ public class GlobalExceptionHandler {
 
 - Service에서 발생한 예외가 컨트롤러로 전달되고, 컨트롤러에서 예외가 발생했을 때 Global Exception Handler가 처리하게 된다.
 
-#### `@Valid` 예외처리
+### 📍 `@Valid` 예외처리
 
 @Valid 어노테이션을 붙여 RequestDto의 입력으로 들어온 필드값들이 유효한지 검사를 할 수 있다. 
 ```
@@ -1213,7 +1213,7 @@ public class GlobalExceptionHandler {
   
 이렇게 처리한다면, 예외가 발생한다면 `이메일 형식이어야합니다.`가 클라이언트에게 응답으로 반환되게 된다.
 
-### 이미지 업로드 관련
+### 📍 이미지 업로드 관련
 
 #### postman에서는 form data형식에서 file을 선택하여 이미지 업로드 할 수 있지만, Swagger에서는 별도로 설정을 해주어야 한다.
 ` @PutMapping(value="/{postId}/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE) `
@@ -1230,7 +1230,7 @@ public class GlobalExceptionHandler {
     }
 ```
 
-### 게시글 수정부분 오류 : "A collection with cascade="all-delete-orphan" was no longer referenced by the owning entity instance"
+### 🤔 게시글 수정부분 오류 : "A collection with cascade="all-delete-orphan" was no longer referenced by the owning entity instance"
 게시글 수정 구현할 때 기존에는 Post 엔티티의 images 필드를 새로운 이미지로 교체를 해버리도록 코드를 짰다.
 ```
     @Transactional
@@ -1275,5 +1275,7 @@ public class GlobalExceptionHandler {
         this.images.addAll(newImages);
       }
 ```
+
+### 📍 .toList() vs .collect(Collectors.toList())
 
 

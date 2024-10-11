@@ -27,6 +27,9 @@ dependencies {
 	// Swagger UI 적용하기 위해 (Springdoc 라이브러리 사용)
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
+	// S3를 이용한 이미지 저장
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'

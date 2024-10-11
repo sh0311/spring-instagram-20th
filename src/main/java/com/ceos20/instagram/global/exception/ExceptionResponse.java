@@ -38,4 +38,10 @@ public class ExceptionResponse {
         return new ExceptionResponse(code.getStatus(), code.getDivisionCode(), exception.getMessage());
     }
 
+    //S3Exception 응답
+    public static ExceptionResponse from(S3Exception exception) {
+        ExceptionCode code=exception.getExceptionCode();
+        return new ExceptionResponse(code.getStatus(), code.getDivisionCode(), exception.getMessage());
+    }
+
 }

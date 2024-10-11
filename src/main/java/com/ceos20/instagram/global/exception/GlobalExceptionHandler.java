@@ -46,6 +46,13 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage(),e);
         return ResponseEntity.status(BAD_REQUEST).body(e.getBindingResult().getFieldErrors().get(0).getDefaultMessage());  //유효성 검사 실패 시 첫 번째 필드 에러 메시지만을 응답 바디로 반환
 
+    }
 
+    //SeException
+    @ExceptionHandler(S3Exception.class)
+    public ResponseEntity<ExceptionResponse> handleS3Exception(S3Exception e){
+        log.error(e.getMessage(),e);
+        final ExceptionResponse response=ExceptionResponse.from(e);
+        return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(response);
     }
 }

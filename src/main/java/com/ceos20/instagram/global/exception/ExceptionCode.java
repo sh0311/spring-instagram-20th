@@ -20,7 +20,9 @@ public enum ExceptionCode {
 
     ALREADY_EXIST_COMMENT_LIKE(HttpStatus.BAD_REQUEST, "B001","이미 좋아요를 누른 댓글입니다."),
     ALREADY_EXIST_NICKNAME(HttpStatus.BAD_REQUEST, "B002", "이미 존재하는 닉네임입니다."),
-    ALREADY_EXIST_EMAIL(HttpStatus.BAD_REQUEST, "B003", "이미 존재하는 이메일입니다.");
+    ALREADY_EXIST_EMAIL(HttpStatus.BAD_REQUEST, "B003", "이미 존재하는 이메일입니다."),
+    INVALID_EXTENSION(HttpStatus.BAD_REQUEST, "B004", "이미지 파일확장자 명이 아닙니다."),
+    NO_FILENAME(HttpStatus.BAD_REQUEST, "B005", "파일의 이름이 존재하지 않습니다.");
 
     private final HttpStatus status;
     private final String divisionCode;
