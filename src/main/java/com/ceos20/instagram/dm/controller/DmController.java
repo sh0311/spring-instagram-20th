@@ -80,7 +80,7 @@ public class DmController {
     }
 
     // 특정 dmRoom에 있는 메시지들 조회
-    @GetMapping("/dmRooms/{roomId}/{userId}")   // 로그인 구현 후 @AuthenticationPrincipal
+    @GetMapping("/dmRooms/{roomId}/{userId}")   // 로그인 구현 후 수정
     @Operation(summary="채팅방 메시지 조회", description="특정 dmRoom에 있는 메시지들 조회")
     @ApiResponses(value={
             @ApiResponse(responseCode="200", description="채팅방 내 메시지 조회 성공"),

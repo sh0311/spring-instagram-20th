@@ -24,7 +24,7 @@ public class CommentLikeController {
     private final CommentLikeService commentLikeService;
 
     //댓글 좋아요 누르기
-    @PostMapping("/{commentId}/likes/{userId}")//로그인 구현하고나서 userId는 @AuthenticationPrincipal 이용하기
+    @PostMapping("/{commentId}/likes/{userId}")//로그인 구현 후 수정
     @Operation(summary="댓글 좋아요 누르기", description="특정 댓글 좋아요 누르기")
     @ApiResponses(value={
             @ApiResponse(responseCode="201", description="좋아요 누르기 성공"),
