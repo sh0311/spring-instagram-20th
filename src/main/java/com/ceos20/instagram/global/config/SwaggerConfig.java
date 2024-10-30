@@ -17,8 +17,8 @@ public class SwaggerConfig {
     
     private Info apiInfo(){
         return new Info()
-                .title("Springdoc 테스트")
-                .description("Springdoc을 사용한 Swagger UI 테스트")
+                .title("Springdoc 테스트")   // API의 제목
+                .description("Springdoc을 사용한 Swagger UI 테스트")  // API에 대한 설명
                 .version("1.0.0");
     }
 }

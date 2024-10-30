@@ -1278,4 +1278,187 @@ public class GlobalExceptionHandler {
 
 ### 📍 Swagger 연동
 
+Swagger 라이브러리로 Spring-fox, Spring-Doc 두 가지가 존재한다. Spring-fox는 나온지 오래되었고 2020년 이후로 업데이트가 중단된 반면에 Spring-Doc은 현재까지 꾸준히 업데이트 되고 있다.
 
+따라서 나는 Spring-Doc 라이브러리를 이용해보았다.
+
+1. build.gradle 추가
+```
+implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
+```
+
+2. application.yml 작성
+```
+springdoc:
+  swagger-ui:
+    # swagger-ui 접근 경로. default 값은 /swagger-ui.html이다.
+    path: /swagger-ui.html
+
+    # 컨트롤러 정렬 순서.
+    # method는 delete - get - patch - post - put 순으로 정렬된다.
+    # alpha를 사용해 알파벳 순으로 정렬할 수 있다.
+    operations-sorter: method
+
+    # swagger-ui default url인 petstore html의 비활성화 설정(개발자가 자신만의 API 문서만을 표시하고, 불필요한 기본 예제 URL을 제거하기 위해 사용)
+    disable-swagger-default-url: true
+
+    # swagger-ui에서 try 했을 때 request duration을 알려주는 설정(Swagger UI에서 API를 테스트할 때 API 요청의 소요 시간이 요청 결과와 함께 표시)
+    display-request-duration: true
+
+  # openAPI 접근 경로. default 값은 /v3/api-docs 이다.
+  api-docs:
+    path: /api-docs
+
+  # response media type 의 기본 값
+  default-produces-media-type: application/json
+```
+3. SwaggerConfig
+
+Jwt 사용 여부에 따라 내용이 달라지는데 아직 Jwt 연결 전이라 아래와 같이 작성하였다.
+```
+@Configuration
+public class SwaggerConfig {
+    @Bean
+    public OpenAPI openAPI(){ //Swagger 문서의 설정을 정의
+        return new OpenAPI()
+                .components(new Components())
+                .info(apiInfo());  //API 정보(제목, 설명, 버전, ..)을 설정
+    }
+    
+    private Info apiInfo(){
+        return new Info()
+                .title("Springdoc 테스트")   // API의 제목
+                .description("Springdoc을 사용한 Swagger UI 테스트")   // API에 대한 설명
+                .version("1.0.0");  // API의 버전
+    }
+}
+```
+![img_8.png](img_8.png)
+
+4. Controller 설정
+
+PostController
+```
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/posts")
+@Tag(name="Post Controller", description="게시글 컨트롤러")
+public class PostController {
+    private final PostService postService;
+    private final PostImageService postImageService;
+
+    // 게시글 생성
+    @PostMapping(value="/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)   //로그인 구현 후 수정   //Swagger에서 MultipartFile을 받게 하기 위해
+    @Operation(summary="게시글 생성", description="새 게시글 생성")
+    @ApiResponses(value={
+            @ApiResponse(responseCode="201", description="게시글 생성 성공"),
+            @ApiResponse(responseCode="400", description="게시글 생성 실패")
+    })
+    @Parameters({
+            @Parameter(name = "userId",description = "게시글 생성할 유저의 id", in = ParameterIn.PATH ,required = true),
+    })
+    public ResponseEntity<Void> createPost(@ModelAttribute PostRequestDto postRequestDto, @PathVariable Long userId){
+        postService.createPost(postRequestDto, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    // 특정 유저의 전체 게시글 조회
+    @GetMapping("/users/{userId}")    //로그인 구현 후 수정
+    @Operation(summary="유저의 게시글 조회", description="특정 유저의 전체 게시글 조회")
+    @ApiResponses(value={
+            @ApiResponse(responseCode="200", description="게시글 조회 성공"),
+            @ApiResponse(responseCode="404", description="해당 id 유저 존재하지 않음")
+    })
+    @Parameters({
+            @Parameter(name = "userId",description = "게시글 조회할 유저의 id", in = ParameterIn.PATH ,required = true),
+    })
+    public ResponseEntity<List<PostResponseDto>> getAllPostsByUser(@PathVariable Long userId){
+        List<PostResponseDto> dtos=postService.getAllPostsByUser(userId);
+        return ResponseEntity.ok().body(dtos);
+    }
+
+    // 하나의 특정 게시글 조회
+    @GetMapping("/{postId}")
+    @Operation(summary="특정 게시글 조회", description="특정 id의 게시글 조회")
+    @ApiResponses(value={
+            @ApiResponse(responseCode="200", description="게시글 조회 성공"),
+            @ApiResponse(responseCode="404", description="해당 id의 게시글이 존재하지 않음")
+    })
+    @Parameters({
+            @Parameter(name = "postId",description = "조회할 게시글의 id", in = ParameterIn.PATH ,required = true),
+    })
+    public ResponseEntity<PostResponseDto> getOnePost(@PathVariable Long postId){
+        PostResponseDto dto=postService.getOnePost(postId);
+        return ResponseEntity.ok().body(dto);
+    }
+    
+    // 팔로잉 중인 유저들의 게시글 전체 조회
+    @GetMapping("/{userId}/followings")   //로그인 구현 후 수정
+    @Operation(summary="팔로잉 게시글 조회", description="현재 팔로잉하는 사람들의 전체 게시글 조회")
+    @ApiResponses(value={
+            @ApiResponse(responseCode="200", description="게시글 조회 성공"),
+            @ApiResponse(responseCode="404", description="해당 id 유저 존재하지 않음")
+    })
+    @Parameters({
+            @Parameter(name = "userId",description = "현재 조회하려는 유저의 id", in = ParameterIn.PATH ,required = true),
+    })
+    public ResponseEntity<List<PostResponseDto>> getAllPostsByFollowing(@PathVariable Long userId){
+        List<PostResponseDto> dtos=postService.getAllPostsByFollowing(userId);
+        return ResponseEntity.ok().body(dtos);
+    }
+
+    // 특정 게시글 수정
+    @PutMapping(value="/{postId}/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)   //로그인 구현 후 수정
+    @Operation(summary="게시글 수정", description="특정 게시글 수정")
+    @ApiResponses(value={
+            @ApiResponse(responseCode="200", description="게시글 수정 성공"),
+            @ApiResponse(responseCode="404", description="해당 id 유저/게시글이 존재하지 않음")
+    })
+    @Parameters({
+            @Parameter(name = "userId",description = "유저 id", in = ParameterIn.PATH ,required = true),
+            @Parameter(name = "postId",description = "게시글 id", in = ParameterIn.PATH ,required = true),
+    })
+    public ResponseEntity<PostResponseDto> updatePost(@PathVariable Long postId, @PathVariable Long userId, @ModelAttribute PostRequestDto postRequestDto){
+        PostResponseDto dto=postService.updatePost(postId, userId, postRequestDto);
+        return ResponseEntity.ok().body(dto);
+    }
+
+    //특정 게시글 삭제
+    @DeleteMapping("/{postId}")
+    @Operation(summary="게시글 삭제", description="특정 id의 게시글 삭제")
+    @ApiResponses(value={
+            @ApiResponse(responseCode="200", description="게시글 삭제 성공"),
+            @ApiResponse(responseCode="404", description="해당 id의 게시글이 존재하지 않음")
+    })
+    @Parameters({
+            @Parameter(name = "postId",description = "삭제할 게시글의 id", in = ParameterIn.PATH ,required = true),
+    })
+    public ResponseEntity<Void> deletePost(@PathVariable Long postId){
+        postService.deletePost(postId);
+        return ResponseEntity.ok().build();
+    }
+
+}
+```
+- `@Tag`
+  
+  API를 그룹화 할 태그명 지정
+
+- `@Operation`
+
+  API에 대한 설명을 작성
+
+- `@ApiResponse`
+
+  응답 코드에 대한 정보를 나타낸다
+
+- `@Parameters`
+
+  입력받는 파라미터에 대한 정보를 나타낸다
+
+![img_7.png](img_7.png)
+![img_9.png](img_9.png)
+![img_12.png](img_12.png)
+
+성공하면 아래와 같은 응답이 뜬다.
+![img_13.png](img_13.png)
