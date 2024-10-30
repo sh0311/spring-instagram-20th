@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 //@slf4j 이용해서 로그 찍도록 코드 짜기
 @Service
@@ -35,6 +37,7 @@ public class PostImageService {
 
     private final PostImageRepository postImageRepository;
     private final AmazonS3 amazonS3;
+    private final S3ImageService s3ImageService;
 
     @Value("${cloud.aws.s3.bucketName}")
     private String bucketName;
@@ -49,70 +52,27 @@ public class PostImageService {
         if(images.isEmpty()){ //@ModelAttribute로 프론트한테 받을 시 List<MultipartFile>가 누락되어 있으면 스프링이 자동으로 빈 리스트로 처리한다.
             return new ArrayList<>();
         }
-        List<PostImage> newImages= images.stream()
-                .map(image -> {
-                    String url=saveImage(image);
 
-                    return PostImage.builder()
-                            .postImageurl(url)
-                            .originalFileName(image.getOriginalFilename())
-                            .post(post)  //연관관계의 주인인 postImage를 post와 연관관계를 설정해줘야 postImage에 post의 id가 외래키로 제대로 저장됨
-                            .build();
+        // 비동기적으로 이미지 업로드 작업 수행
+        List<CompletableFuture<PostImage>> futures= images.stream()
+                .map(image -> s3ImageService.saveImage(image) //비동기 이미지 업로드
 
-                })
+                        .thenApply(url->PostImage.builder() //업로드 완료되고나서 실행됨
+                                .postImageurl(url)
+                                .originalFileName(image.getOriginalFilename())
+                                .post(post)  //연관관계의 주인인 postImage를 post와 연관관계를 설정해줘야 postImage에 post의 id가 외래키로 제대로 저장됨
+                                .build()))
                 .toList();
 
-        return newImages;
+        // 모든 업로드 작업이 완료될 때까지 기다리고 실행
+        CompletableFuture<List<PostImage>> allImagesFuture=CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v->futures.stream()
+                        .map(CompletableFuture::join)
+                        .toList());
 
-    }
+        return allImagesFuture.join();
 
-    // 이미지파일 저장하고 url 반환
-    private String saveImage(MultipartFile image) {
-        if(image.isEmpty()){
-            return null;
-        }
-        //확장자 명이 올바른지 확인 (파일 확장자가 jpg, jpeg, png, gif 중에 속하는지)
-        validateFileExtension(image.getOriginalFilename());
 
-        //파일 이름에 uuid를 붙여 unique하게 만들어줌
-        String filename= UUID.randomUUID().toString()+"-"+image.getOriginalFilename();
-        //String encodedFileName= URLEncoder.encode(filename, StandardCharsets.UTF_8);
-
-        try{
-            ObjectMetadata metadata=getObjectMetaData(image);
-
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, filename, image.getInputStream(), metadata).clone().withCannedAcl(
-                    CannedAccessControlList.PublicRead);
-            amazonS3.putObject(putObjectRequest);  //bucket에 저장된 파일의 url 경로 반환
-
-        } catch (IOException e){
-            throw new RuntimeException("이미지를 s3에 업로드 하는 중에 문제 발생", e);
-        }
-
-        return amazonS3.getUrl(bucketName, filename).toString();
-
-        //return "Temp post image url";
-    }
-    private void validateFileExtension(String filename) {
-        if(filename==null || filename.isEmpty()){
-            throw new BadRequestException(ExceptionCode.NO_FILENAME);
-        }
-
-        int lastDotIndex=filename.lastIndexOf(".");
-        String extension=filename.substring(lastDotIndex+1);
-
-        List<String> extensionList= Arrays.asList("jpg", "jpeg", "png", "gif");
-
-        if(!extensionList.contains(extension)){
-            throw new BadRequestException(ExceptionCode.INVALID_EXTENSION);
-        }
-    }
-    private ObjectMetadata getObjectMetaData(MultipartFile image) {
-        ObjectMetadata metadata=new ObjectMetadata();
-        metadata.setContentLength(image.getSize());
-        metadata.setContentType(image.getContentType());
-
-        return metadata;
     }
 
 

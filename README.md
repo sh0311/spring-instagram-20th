@@ -655,7 +655,7 @@ public class InstagramApplication {
   ```
 ### N+1 문제 해결법
 
-- N+1문제 : Lazy 로딩을 하더라도 연관된(매핑된) 엔티티를 get하는 식으로 사용할 때 추가적으로 쿼리가 나가게 된다.
+- N+1문제 : Member들을 조회하는 하나의 쿼리만 실행했음에도 각 Member와 연관된 Team을 조회하는 추가 쿼리가 발생하는 현상이다. 조회하려는 Member가 N명이라면, 각 Member마다 팀을 조회하는 쿼리가 실행되어 총 N개의 추가 쿼리가 나가게 된다. Lazy 로딩을 하더라도 연관된(매핑된) 엔티티를 get하는 방식으로 접근할 때 추가적으로 쿼리가 발생한다.
 
 - 다대일 관계 (Comment에서 Post를 사용) : fetch join 하기
 
