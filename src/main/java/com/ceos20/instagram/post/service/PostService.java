@@ -111,7 +111,7 @@ public class PostService {
         List<MultipartFile> imagesToAdd = postImageService.saveImagesUpdatePost(target.getImages(), postRequestDto.getImages());
 
 
-        //Multipart -> PostImage & PostImage를 Post와 관계 맺어주기 & S3에 추가된 이미지들만 저장
+        //Multipart -> PostImage로 변환 & PostImage를 Post와 관계 맺어주기 & S3에 추가된 이미지들만 저장
         List<PostImage> newImages=postImageService.changeToPostImage(imagesToAdd, target);
 
         postImageService.saveImagesToDb(newImages); //db에 새로 추가된 postImage 저장

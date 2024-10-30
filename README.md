@@ -1276,6 +1276,6 @@ public class GlobalExceptionHandler {
       }
 ```
 
-### 📍 .toList() vs .collect(Collectors.toList())
+### 📍 Swagger 연동
 
 
