@@ -8,7 +8,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import java.lang.reflect.Method;
 import java.nio.file.AccessDeniedException;
 
-@Getter  //@Getter를 붙여야 Json으로 직렬화 할 때 getter 메소드를 이용해 필드값을 가져올 수 있다. 얘를 붙여야 포스트맨 상에 커스텀한 예외 문구가 나타난다.
+@Getter  //GlobalExceptionHandler에서 ExceptionResponse 객체를 ResponseEntity의 body로 전달하면, 스프링이 해당 객체를 JSON으로 변환해 클라이언트에 반환하는데 이때 @Getter가 필요(ExceptionResponse의 각 필드 값에 접근해 JSON 객체를 만들기 때문에 필요)
 public class ExceptionResponse {
     private final HttpStatus httpStatus;
     private final String divisionCode;
