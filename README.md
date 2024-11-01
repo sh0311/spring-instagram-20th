@@ -1213,22 +1213,6 @@ public class GlobalExceptionHandler {
   
 이렇게 처리한다면, 예외가 발생한다면 `이메일 형식이어야합니다.`가 클라이언트에게 응답으로 반환되게 된다.
 
-### 📍 이미지 업로드 관련
-
-#### postman에서는 form data형식에서 file을 선택하여 이미지 업로드 할 수 있지만, Swagger에서는 별도로 설정을 해주어야 한다.
-` @PutMapping(value="/{postId}/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE) `
-
-#### @ModelAttribute
-이미지파일 업로드 시에는 Content-Type이 **application/json**가 아니라 **multipart/form-data** 이어야 한다. 하지만, @RequestBody는 application/json 형식의 데이터를 처리하므로, multipart/form-data 형식을 처리할 수 없다. 따라서 Swagger나 Postman에서 파일을 업로드하려면 multipart/form-data 형식을 사용해야 하고, 이를 처리하기 위해서는 @RequestBody 대신 **@ModelAttribute**를 사용하여 PostRequestDto를 받아야 한다.
-
-```
-    // 게시글 생성
-    @PostMapping(value="/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)   //Swagger에서 MultipartFile을 받게 하기 위해
-    public ResponseEntity<Void> createPost(@ModelAttribute PostRequestDto postRequestDto, @PathVariable Long userId){
-        postService.createPost(postRequestDto, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-```
 
 ### 🤔 게시글 수정부분 오류 : "A collection with cascade="all-delete-orphan" was no longer referenced by the owning entity instance"
 게시글 수정 구현할 때 기존에는 Post 엔티티의 images 필드를 새로운 이미지로 교체를 해버리도록 코드를 짰다.
