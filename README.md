@@ -1092,6 +1092,7 @@ public class NotFoundException extends RuntimeException{
 #### 3. ExceptionResponse
 
 ```
+@Getter
 public class ExceptionResponse {
     private final HttpStatus httpStatus;
     private final String divisionCode;
@@ -1104,13 +1105,13 @@ public class ExceptionResponse {
     }
 
     //NotFound Exception 응답
-    public static ExceptionResponse of(NotFoundException exception) {
+    public static ExceptionResponse from(NotFoundException exception) {
         ExceptionCode code=exception.getExceptionCode();
         return new ExceptionResponse(code.getStatus(), code.getDivisionCode(), exception.getMessage());
     }
 
     // ForbiddenException 응답
-    public static ExceptionResponse of(ForbiddenException exception) {
+    public static ExceptionResponse from(ForbiddenException exception) {
         ExceptionCode code=exception.getExceptionCode();
         return new ExceptionResponse(code.getStatus(), code.getDivisionCode(), exception.getMessage());
     }
