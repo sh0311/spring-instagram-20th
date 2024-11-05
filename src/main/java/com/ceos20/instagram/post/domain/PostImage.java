@@ -17,6 +17,9 @@ public class PostImage {
     private String postImageurl;
     private String originalFileName;
 
+    //하나의 게시글 내에서 이미지 순서를 나타냄(사용자가 지정)
+    private int imageOrder;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id")
     private Post post;

@@ -54,7 +54,7 @@ public class PostService {
         Post newPost=postRequestDto.toEntity(user);
 
         //MultipartFile을 PostImage로 변환
-        List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), newPost);
+        List<PostImage> images=postImageService.changeToPostImage(postRequestDto.getImages(), newPost, 0);
 
         //Post와 image 매핑
         newPost.mapImages(images);
@@ -110,9 +110,14 @@ public class PostService {
         //새로 추가되어야 하는 이미지 리스트 반환
         List<MultipartFile> imagesToAdd = postImageService.saveImagesUpdatePost(target.getImages(), postRequestDto.getImages());
 
+        //새로 추가된 이미지가 기존 이미지 이후 index에 추가되도록 (이렇게 안하면 삭제된 이미지 자리에 새로운 이미지가 추가됨)
+        int maxOrder=target.getImages().stream()
+                .mapToInt(PostImage::getImageOrder)
+                .max()
+                .orElse(0);
 
         //Multipart -> PostImage로 변환 & PostImage를 Post와 관계 맺어주기 & S3에 추가된 이미지들만 저장
-        List<PostImage> newImages=postImageService.changeToPostImage(imagesToAdd, target);
+        List<PostImage> newImages=postImageService.changeToPostImage(imagesToAdd, target, maxOrder);
 
         postImageService.saveImagesToDb(newImages); //db에 새로 추가된 postImage 저장
 

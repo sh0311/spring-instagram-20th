@@ -47,22 +47,28 @@ public class PostImageService {
 
 
     @Transactional
-    public List<PostImage> changeToPostImage(List<MultipartFile> images, Post post) {
+    public List<PostImage> changeToPostImage(List<MultipartFile> images, Post post, int maxOrder) {
 
         if(images.isEmpty()){ //@ModelAttribute로 프론트한테 받을 시 List<MultipartFile>가 누락되어 있으면 스프링이 자동으로 빈 리스트로 처리한다.
             return new ArrayList<>();
         }
 
         // 비동기적으로 이미지 업로드 작업 수행
-        List<CompletableFuture<PostImage>> futures= images.stream()
-                .map(image -> s3ImageService.saveImage(image) //비동기 이미지 업로드
+        List<CompletableFuture<PostImage>> futures = new ArrayList<>();
+        for(int i=0;i<images.size();i++){
+            MultipartFile image = images.get(i);
+            int order=maxOrder+i+1;
 
-                        .thenApply(url->PostImage.builder() //업로드 완료되고나서 실행됨
-                                .postImageurl(url)
-                                .originalFileName(image.getOriginalFilename())
-                                .post(post)  //연관관계의 주인인 postImage를 post와 연관관계를 설정해줘야 postImage에 post의 id가 외래키로 제대로 저장됨
-                                .build()))
-                .toList();
+            CompletableFuture<PostImage> future=s3ImageService.saveImage(image)
+                    .thenApply(url -> PostImage.builder()
+                            .postImageurl(url)
+                            .originalFileName(image.getOriginalFilename())
+                            .post(post)
+                            .imageOrder(order)  // 순서 저장 -> 나중에 조회할 때 order ASC로 보여지게 하기
+                            .build());
+
+            futures.add(future);
+        }
 
         // 모든 업로드 작업이 완료될 때까지 기다리고 실행
         CompletableFuture<List<PostImage>> allImagesFuture=CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))

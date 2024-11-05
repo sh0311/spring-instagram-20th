@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,8 @@ public class PostResponseDto {
 
     //entity -> dto
     public static PostResponseDto from(Post post){
-        List<String> imageUrls=post.getImages().stream()
+        List<String> sortedImageUrls=post.getImages().stream()
+                .sorted(Comparator.comparingInt(PostImage::getImageOrder))
                 .map(PostImage::getPostImageurl)
                 .toList();
 
@@ -30,7 +32,7 @@ public class PostResponseDto {
                 .content(post.getContent())
                 .likeNum(post.getLikeNum())
                 .nickname(post.getUser().getNickname())
-                .imageUrlList(imageUrls)
+                .imageUrlList(sortedImageUrls)
                 .createdAt(post.getCreatedAt())
                 .build();
 
