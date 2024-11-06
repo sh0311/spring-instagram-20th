@@ -1447,3 +1447,64 @@ public class PostController {
 
 성공하면 아래와 같은 응답이 뜬다.
 ![img_13.png](img_13.png)
+
+
+# 5주차
+### 지난주차 리팩토링
+게시글 수정과정에서, 삭제되어야 할 이미지리스트를 받아 기존 이미지 리스트에서 해당 이미지들을 제거해주는 방식으로 이미지 수정을 구현했었다.
+```java
+    public void update(PostRequestDto postRequestDto,List<PostImage> newImages, List<PostImage> deletedImages) {
+        this.content=postRequestDto.getContent();
+        this.images.removeAll(deletedImages);
+        this.images.addAll(newImages);
+    }
+```
+그런데 이미지 삭제와 관련해서 아래와 같은 리뷰를 받았다. 
+![img_14.png](img_14.png)
+
+removeAll 메소드는 PostImage 객체의 동등성을 기준으로 삭제할 항목을 결정하게 된다. 자바에서는 기본적으로 `메모리 주소`로 동등성을 비교하기 때문에 removeAll이 동작하기 위해서는 같은 메모리 주소를 참조하는 객체여야 한다고 한다. 그런데 JPA에서는 영속성 컨텍스트가 다르다면 동일한 데이터베이스 엔티티라도 메모리 주소가 달라 서로 다른 객체로 인식되어 removeAll에서 삭제되지 않을 수 있다고 한다.
+
+cf) 영속성 컨텍스트가 달라지는 경우
+ 1. 트랜잭션 범위가 다를 때 (@Transactional) : 서로 다른 트랜잭션에서 동일한 엔티티를 조회하면 새로운 영속성 컨텍스트가 생성되어 이전 트랜잭션에서 가져온 동일한 엔티티와 다른 인스턴스가 되어버린다.
+2. 지연로딩 방식으로 동일한 엔티티 조회할 때 : 지연로딩을 이용해 동일한 엔티티 조회할 때 JPA는 엔티티를 프록시 객체로 생성하고 이 엔티티에 접근하는 순간 프록시를 초기화 한다. 초기화가 아직 되지 않은 상태라면 따라 동일한 엔티티가 서로 다른 객체로 취급될 수 있어 초기화 여부에 따라 동일 객체 여부가 달라진다.
+
+따라서 equals 메소드와 hashCode 메소드 모두 오버라이딩을 통해 재정의 해주어야 한다!
+
+
+```
+@Entity
+public class PostImage {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="post_image_id")
+    private Long id;
+
+    private String postImageurl;
+    private String originalFileName;
+
+    //하나의 게시글 내에서 이미지 순서를 나타냄(사용자가 지정)
+    private int imageOrder;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="post_id")
+    private Post post;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostImage postImage = (PostImage) o;
+        return Objects.equals(id, postImage.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+}
+
+```
+- equals : 기본적으로 equals는 객체의 메모리 주소를 기준으로 비교하므로 두 객체의 메모리 주소가 같을 때만 true를 반환한다. 메모리 주소 값이 아니라 객체의 특정 필드값(id)을 기준으로 비교하고 싶으면 equals 메서드를 오버라이딩 해주면 된다. equals 메서드를 오버라이드하여 id 필드로 비교하게 하면, 영속성 컨텍스트가 달라져도 id 값이 동일하면 같은 객체로 인식하게 되어 위의 List.remove 삭제 기능이 잘 작동하게 된다.
+- hashCode : 기본적으로 객체의 메모리 주소 값을 해싱하여 해시코드를 만든 후 반환한다. 따라서 서로 다른 두 객체는 같은 해시코드를 가질 수 없게 된다. equals()의 결과가 true인 두 객체의 해시코드는 반드시 같아야 하기 때문에 *equals를 오버라이드 할 때 hashCode도 함께 재정의 해주어야 한다*. `return Objects.hash(id)` : id 필드를 기준으로 해시코드를 생성하고 반환하게 되어 id 값이 동일한 객체는 동일한 해시코드를 가지게 된다.

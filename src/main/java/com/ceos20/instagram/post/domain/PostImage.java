@@ -3,6 +3,8 @@ package com.ceos20.instagram.post.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,5 +26,18 @@ public class PostImage {
     @JoinColumn(name="post_id")
     private Post post;
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostImage postImage = (PostImage) o;
+        return Objects.equals(id, postImage.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 
 }
