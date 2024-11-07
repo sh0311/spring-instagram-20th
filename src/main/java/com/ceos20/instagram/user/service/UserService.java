@@ -10,6 +10,7 @@ import com.ceos20.instagram.user.repository.UserRepository;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,12 +19,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     // 회원가입
     @Transactional
     public void createUser(UserRequestDto userRequestDto) {
         validateNickname(userRequestDto.getNickname());
-        User user=userRequestDto.toEntity();
+        validateEmail(userRequestDto.getEmail());
+
+        User user=userRequestDto.toEntity(bCryptPasswordEncoder);
         userRepository.save(user);
     }
     //닉네임 중복 검사
@@ -32,18 +36,22 @@ public class UserService {
             throw new BadRequestException(ExceptionCode.ALREADY_EXIST_NICKNAME);
         }
     }
-    //닉네임 중복검사
+    //이메일 중복검사
     private void validateEmail(String email) {
         if(userRepository.existsByEmail(email)){
             throw new BadRequestException(ExceptionCode.ALREADY_EXIST_EMAIL);
         }
     }
 
+
+    //계정 비활성화
+
     // user 한 명 조회
     public UserResponseDto getUser(Long userId){
         User user=userRepository.findById(userId).orElseThrow(()->new NotFoundException(ExceptionCode.NOT_FOUND_USER));
         return UserResponseDto.of(user);
     }
+
 
     // user 정보 수정
     @Transactional

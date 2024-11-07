@@ -48,6 +48,9 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private UserStatus status;  //비활,탈퇴-> INACTIVE
 
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+
     @Builder.Default
     private int followerCount=0;
     @Builder.Default
@@ -74,12 +77,11 @@ public class User extends BaseTimeEntity {
         followerCount--;
     }
 
-    public void update(UserRequestDto userRequestDto) {
+    public void update(UserRequestDto userRequestDto) { //비활성화는 따로 빼기
         this.nickname = userRequestDto.getNickname();
         this.username = userRequestDto.getUsername();
         this.email = userRequestDto.getEmail();
         this.introduce = userRequestDto.getIntroduce();
         this.profileImageurl = userRequestDto.getProfileImageurl();
-        this.status = userRequestDto.getStatus();
     }
 }

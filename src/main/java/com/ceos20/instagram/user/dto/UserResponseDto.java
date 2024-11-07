@@ -1,6 +1,7 @@
 package com.ceos20.instagram.user.dto;
 
 import com.ceos20.instagram.user.domain.User;
+import com.ceos20.instagram.user.domain.UserRole;
 import com.ceos20.instagram.user.domain.UserStatus;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -21,6 +22,7 @@ public class UserResponseDto {
     private UserStatus status;
     private int followerCount;
     private int followingCount;
+    private UserRole role;
 
     public static UserResponseDto of(User user) {
         return UserResponseDto.builder()
@@ -34,6 +36,7 @@ public class UserResponseDto {
                 .status(user.getStatus())
                 .followerCount(user.getFollowerCount())
                 .followingCount(user.getFollowingCount())
+                .role(user.getRole())
                 .build();
     }
 }
