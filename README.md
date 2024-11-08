@@ -1540,6 +1540,8 @@ public class PostImage {
 - Authentication → principal, credentials, authorities 필드를 가지며, 인증 전 상황과 인증 후 상황에 따라 사용되는 목적이 달라진다. 
 
 SecurityContextHolder는 로그인한 사용자의 username, user id, role 등의 정보를 저장하고 이를 필요할 때 추출할 수 있는 저장소 역할을 한다. JWTFilter는 요청에 포함된 JWT를 검증하고나서 유효한 경우에 UsernamePasswordAuthenticationToken 객체를 생성해 SecurityContextHolder에 보관한다. 이 UsernamePasswordAuthenticationToken에는 사용자의 UserDetails 객체가 담겨 있는데, 이 객체에 담는 정보만(아래 코드에서는 username, role, id) 추출할 수 있다. UserDetails 객체에 담길 정보는 JWT에서 추출된 것이므로 JWT에도 해당 정보를 포함해야 한다.
+
+cf) 로그인 한 사용자의 정보 이용할 때 @AuthenticationPrincipal을 이용할 수 있는데 이는 SecurityContextHolder에서 principal (UserDetails)을 가져오게 되는 것이다.
 ```
 String username=jwtUtil.getUsername(token);
         String roleStr=jwtUtil.getRole(token);
@@ -1612,3 +1614,5 @@ public class UsernamePasswordAuthenticationToken extends AbstractAuthenticationT
 ![img_22.png](img_22.png)
 
 ![img_20.png](img_20.png)
+
+![img_18.png](img_18.png)

@@ -1,5 +1,6 @@
 package com.ceos20.instagram.user.controller;
 
+import com.ceos20.instagram.user.dto.CustomUserDetails;
 import com.ceos20.instagram.user.dto.UserRequestDto;
 import com.ceos20.instagram.user.dto.UserResponseDto;
 import com.ceos20.instagram.user.service.UserService;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -37,7 +39,7 @@ public class UserController {
     }
 
 
-    //user 한 명 조회
+    //user 한 명 조회 (나 자신 말고)
     @GetMapping("/{userId}")
     @Operation(summary="특정 유저 조회", description="유저 id로 특정 유저 조회")
     @ApiResponses(value={
@@ -62,7 +64,8 @@ public class UserController {
     @Parameters({
             @Parameter(name = "userId",description = "정보 수정할 유저 id", in = ParameterIn.PATH ,required = true),
     })
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long userId, @RequestBody UserRequestDto userRequestDto){
+    public ResponseEntity<UserResponseDto> updateUser(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequestDto userRequestDto){
+        Long userId=customUserDetails.getId();
         UserResponseDto dto=userService.updateUser(userRequestDto, userId);
         return ResponseEntity.ok().body(dto);
     }

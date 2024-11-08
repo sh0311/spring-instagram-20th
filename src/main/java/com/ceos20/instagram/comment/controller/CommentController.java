@@ -3,6 +3,7 @@ package com.ceos20.instagram.comment.controller;
 import com.ceos20.instagram.comment.dto.CommentRequestDto;
 import com.ceos20.instagram.comment.dto.CommentResponseDto;
 import com.ceos20.instagram.comment.service.CommentService;
+import com.ceos20.instagram.user.dto.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,7 +33,7 @@ public class CommentController {
             @ApiResponse(responseCode="201", description="댓글 등록 성공"),
             @ApiResponse(responseCode="400", description="댓글 등록 실패")
     })
-    public ResponseEntity<Void> createComment(@RequestBody CommentRequestDto commentRequestDto){
+    public ResponseEntity<Void> createComment(@RequestBody CommentRequestDto commentRequestDto) {
         commentService.createComment(commentRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();  //생성 성공 -> 201 상태코드를 응답으로
     }

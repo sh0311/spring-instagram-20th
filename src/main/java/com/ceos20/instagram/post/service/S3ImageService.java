@@ -69,7 +69,7 @@ public class S3ImageService {
         int lastDotIndex = filename.lastIndexOf(".");
         String extension = filename.substring(lastDotIndex + 1);
 
-        List<String> extensionList = Arrays.asList("jpg", "jpeg", "png", "gif");
+        List<String> extensionList = Arrays.asList("jpg", "jpeg", "png", "gif", "JPG", "JPEG", "PNG", "GIF");
 
         if (!extensionList.contains(extension)) {
             throw new BadRequestException(ExceptionCode.INVALID_EXTENSION);

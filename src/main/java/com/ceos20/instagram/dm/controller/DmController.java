@@ -4,6 +4,7 @@ import com.ceos20.instagram.dm.dto.DmRoomResponseDto;
 import com.ceos20.instagram.dm.dto.MessageRequestDto;
 import com.ceos20.instagram.dm.dto.MessageResponseDto;
 import com.ceos20.instagram.dm.service.DmService;
+import com.ceos20.instagram.user.dto.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,7 +39,7 @@ public class DmController {
     }
 
     // 채팅방 나가기
-    @PatchMapping("/dmRooms/{roomId}/{userId}")  // 로그인 구현 후 @AuthenticationPrincipal
+    @PatchMapping("/dmRooms/{roomId}")  // 로그인 구현 후 @AuthenticationPrincipal
     @Operation(summary="채팅방 나가기", description="채팅방 나가기")
     @ApiResponses(value={
             @ApiResponse(responseCode="200", description="채팅방 나가기 성공"),
@@ -46,7 +48,8 @@ public class DmController {
             @Parameter(name = "roomId",description = "채팅방 id", in = ParameterIn.PATH ,required = true),
             @Parameter(name = "userId",description = "채팅방 나가려하는 유저의 id", in = ParameterIn.PATH ,required = true),
     })
-    public ResponseEntity<Void> leaveRoom(@PathVariable Long roomId, @PathVariable Long userId){
+    public ResponseEntity<Void> leaveRoom(@PathVariable Long roomId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        Long userId = customUserDetails.getId();
         dmService.leaveRoom(roomId, userId);
         return ResponseEntity.ok().build();
     }
@@ -80,7 +83,7 @@ public class DmController {
     }
 
     // 특정 dmRoom에 있는 메시지들 조회
-    @GetMapping("/dmRooms/{roomId}/{userId}")   // 로그인 구현 후 수정
+    @GetMapping("/dmRooms/{roomId}")   // 로그인 구현 후 수정
     @Operation(summary="채팅방 메시지 조회", description="특정 dmRoom에 있는 메시지들 조회")
     @ApiResponses(value={
             @ApiResponse(responseCode="200", description="채팅방 내 메시지 조회 성공"),
@@ -89,7 +92,8 @@ public class DmController {
             @Parameter(name = "roomId",description = "조회하려는 채팅방 id", in = ParameterIn.PATH ,required = true),
             @Parameter(name = "userId",description = "현재 로그인한 유저 id", in = ParameterIn.PATH ,required = true),
     })
-    public ResponseEntity<List<MessageResponseDto>> getMessagesInRooms(@PathVariable Long roomId, @PathVariable Long userId){
+    public ResponseEntity<List<MessageResponseDto>> getMessagesInRooms(@PathVariable Long roomId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        Long userId = customUserDetails.getId();
         List<MessageResponseDto> messages=dmService.getMessagesInRoom(roomId, userId);
         return ResponseEntity.ok().body(messages);
     }

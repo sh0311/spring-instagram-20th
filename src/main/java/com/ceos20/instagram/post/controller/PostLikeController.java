@@ -2,6 +2,7 @@ package com.ceos20.instagram.post.controller;
 
 import com.ceos20.instagram.post.dto.PostLikeResponseDto;
 import com.ceos20.instagram.post.service.PostLikeService;
+import com.ceos20.instagram.user.dto.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +25,7 @@ public class PostLikeController {
     private final PostLikeService postLikeService;
 
     //게시글에 좋아요 누르기
-    @PostMapping("/{postId}/likes/{userId}")  //로그인 구현 후 수정
+    @PostMapping("/{postId}/likes")  //로그인 구현 후 수정
     @Operation(summary="게시글 좋아요 누르기", description="특정 게시글에 좋아요 버튼 누르기")
     @ApiResponses(value={
             @ApiResponse(responseCode="200", description="게시글 좋아요 누르기 성공"),
@@ -33,7 +35,8 @@ public class PostLikeController {
             @Parameter(name = "postId",description = "게시글 id", in = ParameterIn.PATH ,required = true),
             @Parameter(name = "userId",description = "누르는 유저 id", in = ParameterIn.PATH ,required = true),
     })
-    public ResponseEntity<Void> pressLike(@PathVariable Long postId, @PathVariable Long userId) {
+    public ResponseEntity<Void> pressLike(@PathVariable Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getId();
         postLikeService.pressLike(postId, userId);
         return ResponseEntity.ok().build();
     }
