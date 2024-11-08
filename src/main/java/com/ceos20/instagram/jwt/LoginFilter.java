@@ -1,5 +1,7 @@
 package com.ceos20.instagram.jwt;
 
+import com.ceos20.instagram.reissue.domain.Refresh;
+import com.ceos20.instagram.reissue.repository.RefreshRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.dto.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final RefreshRepository refreshRepository;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
@@ -76,6 +80,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String access=jwtUtil.createJwt("access", username, role, userId, 30*60*1000L); //30분
         String refresh=jwtUtil.createJwt("refresh", username, role, userId, 24*60*60*1000L); //24시간
 
+        saveRefreshToken(username, userId, refresh, 24*60*60*1000L);
+
         //Authorization 헤더를 통해 토큰을 전송
         response.addHeader("access",access);
         response.addCookie(createCookie("refresh",refresh));
@@ -96,6 +102,22 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+    }
+
+
+    private void saveRefreshToken(String username, Long userId, String newRefresh, Long expiredMs) {
+
+        Date date=new Date(System.currentTimeMillis()+expiredMs);
+
+        Refresh refresh=Refresh.builder()
+                .username(username)
+                .userId(userId)
+                .refresh(newRefresh)
+                .expiration(date.toString())
+                .build();
+
+        refreshRepository.save(refresh);
 
     }
 }

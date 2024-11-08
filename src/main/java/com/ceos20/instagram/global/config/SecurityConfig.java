@@ -4,6 +4,7 @@ package com.ceos20.instagram.global.config;
 import com.ceos20.instagram.jwt.JWTFilter;
 import com.ceos20.instagram.jwt.JWTUtil;
 import com.ceos20.instagram.jwt.LoginFilter;
+import com.ceos20.instagram.reissue.repository.RefreshRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,8 @@ public class SecurityConfig {
 
     private final JWTUtil jwtUtil;
 
+    private final RefreshRepository refreshRepository;
+
     //AuthenticationManager Bean 등록 (AuthenticationManager를 반환해준다)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -58,6 +61,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth)->auth
                         .requestMatchers("/login", "/", "/users").permitAll() //로그인, 회원가입은 토큰 없이 접근 가능
                         .requestMatchers("/admin").hasRole("ADMIN") //ADMIN 권한을 가진 사용자만 가능
+                        .requestMatchers("/reissue").permitAll()
                         .anyRequest().authenticated()); //이외에는 로그인 한 사용자만 접근가능
 
         //JWTFilter 등록 (jwt토큰 검증)
@@ -65,7 +69,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         //LoginFilter 등록
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
 
 
         //jwt에서는 세션을 stateless 상태로 관리해야 한다
