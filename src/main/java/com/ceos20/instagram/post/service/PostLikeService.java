@@ -4,17 +4,13 @@ import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.domain.PostLike;
 import com.ceos20.instagram.post.dto.PostLikeResponseDto;
 import com.ceos20.instagram.post.repository.PostLikeRepository;
-import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
-import com.ceos20.instagram.user.repository.UserRepository;
 
 import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

@@ -8,10 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
   // javax.validation 패키지는 기본적으로 포함되지 않으므로 외부 라이브러리를 프로젝트에 포함해야 함. (build.gradle에 validation 의존성 축)
 
-import org.hibernate.annotations.CreationTimestamp;
-
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

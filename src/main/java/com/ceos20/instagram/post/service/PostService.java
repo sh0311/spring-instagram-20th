@@ -2,9 +2,7 @@ package com.ceos20.instagram.post.service;
 
 
 import com.ceos20.instagram.comment.repository.CommentRepository;
-import com.ceos20.instagram.comment.service.CommentService;
 import com.ceos20.instagram.follow.domain.Follow;
-import com.ceos20.instagram.follow.repository.FollowRepository;
 import com.ceos20.instagram.follow.service.FollowService;
 import com.ceos20.instagram.global.exception.ExceptionCode;
 import com.ceos20.instagram.global.exception.ForbiddenException;
@@ -13,11 +11,9 @@ import com.ceos20.instagram.post.domain.Post;
 import com.ceos20.instagram.post.domain.PostImage;
 import com.ceos20.instagram.post.dto.PostRequestDto;
 import com.ceos20.instagram.post.dto.PostResponseDto;
-import com.ceos20.instagram.post.repository.PostImageRepository;
 import com.ceos20.instagram.post.repository.PostLikeRepository;
 import com.ceos20.instagram.post.repository.PostRepository;
 import com.ceos20.instagram.user.domain.User;
-import com.ceos20.instagram.user.repository.UserRepository;
 
 import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor

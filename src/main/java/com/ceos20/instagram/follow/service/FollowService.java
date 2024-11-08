@@ -6,7 +6,6 @@ import com.ceos20.instagram.follow.repository.FollowRepository;
 import com.ceos20.instagram.global.exception.BadRequestException;
 import com.ceos20.instagram.global.exception.NotFoundException;
 import com.ceos20.instagram.user.domain.User;
-import com.ceos20.instagram.user.repository.UserRepository;
 import com.ceos20.instagram.global.exception.ExceptionCode;
 
 import com.ceos20.instagram.user.service.UserService;
