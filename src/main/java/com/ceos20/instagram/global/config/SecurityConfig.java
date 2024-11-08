@@ -59,6 +59,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth)->auth
+                        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/login", "/", "/users").permitAll() //로그인, 회원가입은 토큰 없이 접근 가능
                         .requestMatchers("/admin").hasRole("ADMIN") //ADMIN 권한을 가진 사용자만 가능
                         .requestMatchers("/reissue").permitAll()

@@ -47,8 +47,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             //스프링 시큐리티에서 email과 password를 검증하기 위해서는 token에 담아야 함
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, password);
 
-            //SecurityContextHolder.getContext().setAuthentication(authToken);
-
             //검증하기 위해 email, password를 토큰에 담아 Authetnication에 넘김
             return authenticationManager.authenticate(authToken);
 
