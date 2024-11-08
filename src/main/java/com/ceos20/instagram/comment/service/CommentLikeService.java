@@ -3,9 +3,8 @@ package com.ceos20.instagram.comment.service;
 import com.ceos20.instagram.comment.domain.Comment;
 import com.ceos20.instagram.comment.domain.CommentLike;
 import com.ceos20.instagram.comment.repository.CommentLikeRepository;
-import com.ceos20.instagram.comment.repository.CommentRepository;
 import com.ceos20.instagram.user.domain.User;
-import com.ceos20.instagram.user.repository.UserRepository;
+
 
 import com.ceos20.instagram.user.service.UserService;
 import lombok.RequiredArgsConstructor;

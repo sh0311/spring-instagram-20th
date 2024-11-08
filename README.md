@@ -1510,5 +1510,105 @@ public class PostImage {
 - hashCode : 기본적으로 객체의 메모리 주소 값을 해싱하여 해시코드를 만든 후 반환한다. 따라서 서로 다른 두 객체는 같은 해시코드를 가질 수 없게 된다. equals()의 결과가 true인 두 객체의 해시코드는 반드시 같아야 하기 때문에 *equals를 오버라이드 할 때 hashCode도 함께 재정의 해주어야 한다*. `return Objects.hash(id)` : id 필드를 기준으로 해시코드를 생성하고 반환하게 되어 id 값이 동일한 객체는 동일한 해시코드를 가지게 된다.
 
 
-📍회원가입
+### 📍회원가입
 ![img_15.png](img_15.png)
+
+## 📍로그인 및 인증 과정
+![img_17.png](img_17.png)
+
+
+### 📍스프링 시큐리티의 인증 과정
+
+1. 인증에 필요한 사용자 정보를 받아 "준비"하는 단계
+
+- 사용자가 로그인 요청시 보낸 아이디, 비밀번호를 담은 Authentication(UsernamePasswordAuthenticationToken) 생성
+
+2. 준비단계에서 만들어진 Authentication (UsernamePasswordAuthenticationToken)를 기반으로 "인증을 진행"
+
+- AuthenticationManager가 Authentication 객체에 담긴 아이디와 패스워드를 db에 저장된 정보와 일치하는지 확인
+
+3. 인증 "완료"
+
+- 인증이 성공적으로 완료되면, 인증된 사용자의 정보가 포함된 Authentication(UsernamePasswordAuthenticationToken) 객체를 생성하고, 이 Authentication을 SecurityContext에 저장한다. 이후 애플리케이션에서 SecurityContextHolder를 통해 인증된 사용자의 정보를 참조할 수 있다.
+- 인증 실패시 401 Aunautorized 상태를 응답하게 된다.
+
+### 📍SecurityContextHolder, SecurityContext, Authentication
+![img_16.png](img_16.png)
+
+- SecurityContextHolder → 인증된 사용자의 상세 정보를 보관해주는 장소
+- SecurityContext → SecurityContextHolder를 통해 얻을 수 있으며, 현재 인증된 사용자의 정보(Authentication)를 포함한다
+- Authentication → principal, credentials, authorities 필드를 가지며, 인증 전 상황과 인증 후 상황에 따라 사용되는 목적이 달라진다. 
+
+SecurityContextHolder는 로그인한 사용자의 username, user id, role 등의 정보를 저장하고 이를 필요할 때 추출할 수 있는 저장소 역할을 한다. JWTFilter는 요청에 포함된 JWT를 검증하고나서 유효한 경우에 UsernamePasswordAuthenticationToken 객체를 생성해 SecurityContextHolder에 보관한다. 이 UsernamePasswordAuthenticationToken에는 사용자의 UserDetails 객체가 담겨 있는데, 이 객체에 담는 정보만(아래 코드에서는 username, role, id) 추출할 수 있다. UserDetails 객체에 담길 정보는 JWT에서 추출된 것이므로 JWT에도 해당 정보를 포함해야 한다.
+```
+String username=jwtUtil.getUsername(token);
+        String roleStr=jwtUtil.getRole(token);
+        UserRole roleEnum = UserRole.valueOf(roleStr); // 문자열을 Role enum으로 변환
+        Long userId=jwtUtil.getUserId(token);
+
+        User user= User.builder()
+                .username(username)
+                .role(roleEnum)
+                .id(userId)
+                .build();
+
+
+        //UserDetails에 유저 정보 객체 담기
+        CustomUserDetails customUserDetails=new CustomUserDetails(user);
+
+        //인증 성공 후 만든 Authentication(UsernamePasswordAuthenticationToken) -> 따라서 비밀번호는 삭제해야 하므로 null로 Authentication 객체 생성
+        Authentication authToken=new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+
+        //세션에 사용자 저장
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+```
+
+### 📍Authentication
+
+Authentication은 인터페이스이며 id,password를 통한 인증인 경우엔 Authentication가 `UsernamePasswordAuthenticationToken` 구현체로 표현된다.
+
+위에서 설명했던 `준비단계에서 만들어진 UsernamePasswordAuthenticationToken`과 `인증 완료 후 만들어진 UsernamePasswordAuthenticationToken`은 **서로 다른 객체**이다!!
+- 인증 전 : 인증을 요구하는 주체가 인증에 필요한 정보(로그인 아이디, 패스워드)를 제공하기 위해 사용
+  - principal - 로그인 시도 아이디(String)
+  - credentials - 로그인 시도 비밀번호(String)
+  - 인증 여부 - false
+- 인증 후 - 인증이 완료된 사용자의 정보를 저장하는데 사용
+  - principal - 인증이 완료된 사용자 객체(UserDetails의 구현체)
+  - credentials - 인증 완료후 유출 가능성을 줄이기 위해 삭제
+  - authorities - 인증된 사용자가 가지는 권한 목록
+  - 인증 여부 - true
+  
+```
+public abstract class AbstractAuthenticationToken implements Authentication, CredentialsContainer {
+}
+ 
+public class UsernamePasswordAuthenticationToken extends AbstractAuthenticationToken {
+ 
+	private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
+ 
+	private final Object principal;
+ 
+	private Object credentials;
+ 
+	// 인증 완료 전의 객체 생성
+	public UsernamePasswordAuthenticationToken(Object principal, Object credentials) {
+		super(null);
+		this.principal = principal;
+		this.credentials = credentials;
+		setAuthenticated(false);
+	}
+ 
+	// 인증 완료 후의 객체 생성
+	public UsernamePasswordAuthenticationToken(Object principal, Object credentials,
+			Collection<? extends GrantedAuthority> authorities) {
+		super(authorities);
+		this.principal = principal;
+		this.credentials = credentials;
+		super.setAuthenticated(true); // must use super, as we override
+	}
+```
+
+![img_21.png](img_21.png)
+![img_22.png](img_22.png)
+
+![img_20.png](img_20.png)
