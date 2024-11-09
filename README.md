@@ -1539,14 +1539,6 @@ public class PostImage {
 
 3-3) 토큰 타입이 access가 아니라면 → 401 응답을 보내게 된다.
 
-### 3) OAuth 인증
-
-OAuth 2.0의 인증 방식은 4가지가 있지만 Authorization Code Grant 방식이 가장 범용적으로 쓰인다. 
-
-- Resource Owner : 일반 사용자
-- Client : 우리가 만든 웹 어플리케이션
-- Authoriztion Server : 권한 관리, access token, refresh token을 발급해주는 서버
-- Resource Server : OAuth 2.0을 
 
 ## 📍로그인 및 인증 과정
 ![img_17.png](img_17.png)
