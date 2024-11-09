@@ -29,7 +29,7 @@ public class UserController {
 
     //user 생성
     @PostMapping
-    @Operation(summary="유저 생성", description="유저 새로 생성", security = @SecurityRequirement(name = "accessToken"))
+    @Operation(summary="유저 생성", description="유저 새로 생성")
     @ApiResponses(value={
             @ApiResponse(responseCode="201", description="유저 생성 성공"),
             @ApiResponse(responseCode="400", description="유저 생성 실패")
@@ -42,7 +42,7 @@ public class UserController {
 
     //user 한 명 조회 (나 자신 말고)
     @GetMapping("/{userId}")
-    @Operation(summary="특정 유저 조회", description="유저 id로 특정 유저 조회", security = @SecurityRequirement(name = "accessToken"))
+    @Operation(summary="특정 유저 조회", description="유저 id로 특정 유저 조회")
     @ApiResponses(value={
             @ApiResponse(responseCode="200", description="유저 조회 성공"),
             @ApiResponse(responseCode="404", description="해당 유저 존재하지 않음")
@@ -57,7 +57,7 @@ public class UserController {
 
     //user 정보 수정
     @PutMapping("/{userId}")  //로그인 구현 후 수정
-    @Operation(summary="유저 정보 수정", description="유저 id로 특정 유저 정보 수정", security = @SecurityRequirement(name = "accessToken"))
+    @Operation(summary="유저 정보 수정", description="유저 id로 특정 유저 정보 수정")
     @ApiResponses(value={
             @ApiResponse(responseCode="200", description="유저 정보 수정 성공"),
             @ApiResponse(responseCode="404", description="해당 유저 존재하지 않음")

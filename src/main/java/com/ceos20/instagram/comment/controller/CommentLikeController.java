@@ -28,7 +28,7 @@ public class CommentLikeController {
 
     //댓글 좋아요 누르기
     @PostMapping("/{commentId}/likes")
-    @Operation(summary="댓글 좋아요 누르기", description="특정 댓글 좋아요 누르기", security = @SecurityRequirement(name = "accessToken"))
+    @Operation(summary="댓글 좋아요 누르기", description="특정 댓글 좋아요 누르기")
     @ApiResponses(value={
             @ApiResponse(responseCode="201", description="좋아요 누르기 성공"),
             @ApiResponse(responseCode="404", description="해당 id의 댓글/유저 찾기 실패")

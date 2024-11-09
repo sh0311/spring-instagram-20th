@@ -29,7 +29,7 @@ public class CommentController {
 
     //댓글 등록
     @PostMapping("/comments")
-    @Operation(summary="댓글 등록", description="게시글에 댓글 등록", security = @SecurityRequirement(name = "accessToken"))
+    @Operation(summary="댓글 등록", description="게시글에 댓글 등록")
     @ApiResponses(value={
             @ApiResponse(responseCode="201", description="댓글 등록 성공"),
             @ApiResponse(responseCode="400", description="댓글 등록 실패")
@@ -41,7 +41,7 @@ public class CommentController {
 
     //댓글 삭제
     @DeleteMapping("/comments/{commentId}")
-    @Operation(summary="댓글 삭제", description="특정 댓글 삭제", security = @SecurityRequirement(name = "accessToken"))
+    @Operation(summary="댓글 삭제", description="특정 댓글 삭제")
     @ApiResponses(value={
             @ApiResponse(responseCode="200", description="댓글 삭제 성공"),
             @ApiResponse(responseCode="404", description="해당 id 댓글 찾기 실패")
@@ -56,7 +56,7 @@ public class CommentController {
 
     //부모댓글 조회
     @GetMapping("/{postId}/parents")
-    @Operation(summary="부모 댓글 조회", description="특정 게시글 모든 부모 댓글 조회", security = @SecurityRequirement(name = "accessToken"))
+    @Operation(summary="부모 댓글 조회", description="특정 게시글 모든 부모 댓글 조회")
     @ApiResponses(value={
             @ApiResponse(responseCode="200", description="부모 댓글 조회 성공"),
             @ApiResponse(responseCode="404", description="해당 id 부모댓글 찾기 실패")
@@ -71,7 +71,7 @@ public class CommentController {
 
     // 특정 부모의 자식 댓글 조회
     @GetMapping("/comments/{parentId}/childs")
-    @Operation(summary="자식 댓글 조회", description="특정 부모 자식 댓글 조회", security = @SecurityRequirement(name = "accessToken"))
+    @Operation(summary="자식 댓글 조회", description="특정 부모 자식 댓글 조회")
     @ApiResponses(value={
             @ApiResponse(responseCode="200", description="자식댓글 조회 성공"),
             @ApiResponse(responseCode="404", description="해당 id 부모댓글 찾기 실패")
