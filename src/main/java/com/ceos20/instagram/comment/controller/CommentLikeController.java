@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class CommentLikeController {
 
     //댓글 좋아요 누르기
     @PostMapping("/{commentId}/likes")
-    @Operation(summary="댓글 좋아요 누르기", description="특정 댓글 좋아요 누르기")
+    @Operation(summary="댓글 좋아요 누르기", description="특정 댓글 좋아요 누르기", security = @SecurityRequirement(name = "accessToken"))
     @ApiResponses(value={
             @ApiResponse(responseCode="201", description="좋아요 누르기 성공"),
             @ApiResponse(responseCode="404", description="해당 id의 댓글/유저 찾기 실패")

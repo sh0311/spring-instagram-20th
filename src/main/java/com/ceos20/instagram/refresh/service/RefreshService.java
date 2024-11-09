@@ -1,11 +1,11 @@
-package com.ceos20.instagram.reissue.service;
+package com.ceos20.instagram.refresh.service;
 
 import com.ceos20.instagram.global.exception.BadRequestException;
 import com.ceos20.instagram.global.exception.ExceptionCode;
 import com.ceos20.instagram.jwt.JWTUtil;
-import com.ceos20.instagram.reissue.domain.Refresh;
-import com.ceos20.instagram.reissue.dto.RefreshResponseDto;
-import com.ceos20.instagram.reissue.repository.RefreshRepository;
+import com.ceos20.instagram.refresh.domain.Refresh;
+import com.ceos20.instagram.refresh.dto.RefreshResponseDto;
+import com.ceos20.instagram.refresh.repository.RefreshRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

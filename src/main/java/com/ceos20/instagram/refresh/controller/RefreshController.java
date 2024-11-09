@@ -1,7 +1,7 @@
-package com.ceos20.instagram.reissue.controller;
+package com.ceos20.instagram.refresh.controller;
 
-import com.ceos20.instagram.reissue.dto.RefreshResponseDto;
-import com.ceos20.instagram.reissue.service.RefreshService;
+import com.ceos20.instagram.refresh.dto.RefreshResponseDto;
+import com.ceos20.instagram.refresh.service.RefreshService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

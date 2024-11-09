@@ -1,5 +1,6 @@
-package com.ceos20.instagram.reissue.domain;
+package com.ceos20.instagram.refresh.domain;
 
+import com.ceos20.instagram.global.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
-public class Refresh {
+public class Refresh extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

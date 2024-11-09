@@ -1450,7 +1450,8 @@ public class PostController {
 
 
 # 5주차
-### 📍지난주차 리팩토링
+## 📍지난주차 리팩토링
+### < equals, hashcode를 이용한 동등성 비교 >
 게시글 수정과정에서, 삭제되어야 할 이미지리스트를 받아 기존 이미지 리스트에서 해당 이미지들을 제거해주는 방식으로 이미지 수정을 구현했었다.
 ```java
     public void update(PostRequestDto postRequestDto,List<PostImage> newImages, List<PostImage> deletedImages) {
@@ -1510,18 +1511,52 @@ public class PostImage {
 - `hashCode` : 기본적으로 객체의 메모리 주소 값을 해싱하여 해시코드를 만든 후 반환한다. 따라서 서로 다른 두 객체는 같은 해시코드를 가질 수 없게 된다. equals()의 결과가 true인 두 객체의 해시코드는 반드시 같아야 하기 때문에 *equals를 오버라이드 할 때 hashCode도 함께 재정의 해주어야 한다*. `return Objects.hash(id)` : id 필드를 기준으로 해시코드를 생성하고 반환하게 되어 id 값이 동일한 객체는 동일한 해시코드를 가지게 된다.
 
 
-### 📍회원가입
+## 📍회원가입
+비밀번호가 유출될 경우 해커가 사용하게 되는 경우를 방지하기 위해 비밀번호를 암호화해서 데이터베이스에 저장해야한다.
 ![img_15.png](img_15.png)
+
+## 📍인증방식
+### 1) 세션 + 쿠키를 이용한 인증
+![img_19.png](img_19.png)
+사용자가 로그인을 시도하면 서버에서 사용자 정보를 읽어 사용자 확인 한 후 세션 저장소에 사용자에게 고유한 Session ID를 생성하여 저장한다. 
+서버는 로그인에 대한 응답으로 Response Header에 발급된 Session ID를 실어 보낸다. 사용자는 이 Session ID를 쿠키에 저장하고, 이후 매 요청마다 Http Request Header에 이 쿠키를 실어보내고,
+서버에서는 이 쿠키를 받아 세션 저장소에서 대조를 한 후, 대응되는 정보가 있다면 인증이 완료된 것이므로 사용자에게 맞는 데이터를 보내준다..
+
+단점 : 서버에 세션 저장소를 두고 여기에 Session ID를 저장해야 하기 때문에 추가적인 저장공간을 필요로 한다. 또한 요청이 들어올 때마다 db에서 조회해야 하므로 속도가 느리고 접속자가 많으면 성능이 저하될 수가 있다. + 쿠키 탈취 위험
+
+### 2) Access Token + Refresh Token을 이용한 인증
+![img_23.png](img_23.png)
+1)클라이언트가 요청을 보내면 서버측에서는 요청 헤더에 access라는 이름의 헤더값을 읽는다.
+
+2-1) 이때 access 토큰이 없다면 → 이 필터는 더 이상 처리하지 않고 요청을 다음 필터로 넘긴다. 인증이 필요없는 경로의 요청이라면 permitAll()과 같은 설정에 의해 인증 없이 정상적으로 처리한다.(ex. /login 요청 : LoginFilter에서 가로채서 로그인 로직을 수행) 인증이 필요한 경로의 요청이라면 Spring Security의 다른 필터가 요청이 인증되지 않은 상태임을 인식하고 401 Unauthorized 응답을 반환한다.
+
+2-2) access 토큰이 존재한다면 → 만료되지 않았는지, 토큰 타입이 access가 맞는지 검증을 하게 된다.
+
+3-1) 만료되지 않고 토큰 타입도 올바르다면 → 클라이언트의 요청을 처리해 응답해준다.
+
+3-2) 만료되었다면 → access 토큰이 만료되었다고 클라이언트에게 응답을 보내게 되고, 그럼 클라이언트는 refresh 토큰과 access 토큰을 요청 헤더에 실어 토큰 재발급 요청을 하게 된다.
+서버는 받은 HTTP 요청 헤더의 Refresh 토큰과 사용자의 DB에 저장되어 있던 Refresh 토큰을 비교하여 토큰이 동일하고 유효기간이 만료되지 않았는지 확인한다. 모든 조건을 만족한다면 Refresh 토큰으로부터 user 정보를 가져와 새로운 access 토큰을 발급해주며 Refresh Rotate를 위해 새로운 refresh 토큰도 함께 발급해주고 기존의 refresh 토큰은 db에서 삭제해버린다.
+
+3-3) 토큰 타입이 access가 아니라면 → 401 응답을 보내게 된다.
+
+### 3) OAuth 인증
+
+OAuth 2.0의 인증 방식은 4가지가 있지만 Authorization Code Grant 방식이 가장 범용적으로 쓰인다. 
+
+- Resource Owner : 일반 사용자
+- Client : 우리가 만든 웹 어플리케이션
+- Authoriztion Server : 권한 관리, access token, refresh token을 발급해주는 서버
+- Resource Server : OAuth 2.0을 
 
 ## 📍로그인 및 인증 과정
 ![img_17.png](img_17.png)
 
 
-### 📍스프링 시큐리티의 인증 과정
+## 📍스프링 시큐리티의 인증 과정
 
 1. 인증에 필요한 사용자 정보를 받아 "준비"하는 단계
 
-- 사용자가 로그인 요청시 보낸 아이디, 비밀번호를 담은 Authentication(UsernamePasswordAuthenticationToken) 생성
+- 사용자가 로그인 요청시 보낸 아이디, 비밀번호를 담은 Authentication(UsernamePasswordAuthenticationToken) 생성하고 AuthenticationManager에게 보낸다.
 
 2. 준비단계에서 만들어진 Authentication (UsernamePasswordAuthenticationToken)를 기반으로 "인증을 진행"
 
@@ -1532,14 +1567,14 @@ public class PostImage {
 - 인증이 성공적으로 완료되면, 인증된 사용자의 정보가 포함된 Authentication(UsernamePasswordAuthenticationToken) 객체를 생성하고, 이 Authentication을 SecurityContext에 저장한다. 이후 애플리케이션에서 SecurityContextHolder를 통해 인증된 사용자의 정보를 참조할 수 있다.
 - 인증 실패시 401 Aunautorized 상태를 응답하게 된다.
 
-### 📍SecurityContextHolder, SecurityContext, Authentication
+## 📍SecurityContextHolder, SecurityContext, Authentication
 ![img_16.png](img_16.png)
 
 - SecurityContextHolder → 인증된 사용자의 상세 정보를 보관해주는 장소
 - SecurityContext → SecurityContextHolder를 통해 얻을 수 있으며, 현재 인증된 사용자의 정보(Authentication)를 포함한다
 - Authentication → principal, credentials, authorities 필드를 가지며, 인증 전 상황과 인증 후 상황에 따라 사용되는 목적이 달라진다. 
 
-SecurityContextHolder는 로그인한 사용자의 username, user id, role 등의 정보를 저장하고 이를 필요할 때 추출할 수 있는 저장소 역할을 한다. JWTFilter는 요청에 포함된 JWT를 검증하고나서 유효한 경우에 UsernamePasswordAuthenticationToken 객체를 생성해 SecurityContextHolder에 보관한다. 이 UsernamePasswordAuthenticationToken에는 사용자의 UserDetails 객체가 담겨 있는데, 이 객체에 담는 정보만(아래 코드에서는 username, role, id) 추출할 수 있다. UserDetails 객체에 담길 정보는 JWT에서 추출된 것이므로 JWT에도 해당 정보를 포함해야 한다.
+SecurityContextHolder는 로그인한 사용자의 username, user id, role 등의 정보를 저장하고 이를 필요할 때 추출할 수 있는 저장소 역할을 한다. JWTFilter는 요청에 포함된 JWT를 검증하고나서 유효한 경우에 UsernamePasswordAuthenticationToken 객체를 생성해 SecurityContextHolder에 보관한다. 이 UsernamePasswordAuthenticationToken에는 사용자의 UserDetails 객체가 담겨 있는데, 이 객체에 담는 정보를(아래 코드에서는 username, role, id) 추출할 수 있다. UserDetails 객체에 담길 정보는 JWT에서 추출된 것이므로 JWT에도 해당 정보를 포함해야 한다.
 
 cf) 로그인 한 사용자의 정보 이용할 때 @AuthenticationPrincipal을 이용할 수 있는데 이는 SecurityContextHolder에서 principal (UserDetails)을 가져오게 되는 것이다.
 ```
@@ -1565,7 +1600,7 @@ String username=jwtUtil.getUsername(token);
         SecurityContextHolder.getContext().setAuthentication(authToken);
 ```
 
-### 📍Authentication
+## 📍Authentication
 
 Authentication은 인터페이스이며 id,password를 통한 인증인 경우엔 Authentication가 `UsernamePasswordAuthenticationToken` 구현체로 표현된다.
 
@@ -1610,9 +1645,18 @@ public class UsernamePasswordAuthenticationToken extends AbstractAuthenticationT
 	}
 ```
 
+### 📍로그인 및 API 테스트
+로그인 결과 response header에 access 토큰이, cookie에 refresh 토큰이 잘 담겼음을 확인할 수 있다.
 ![img_21.png](img_21.png)
 ![img_22.png](img_22.png)
 
+reqeust header에 access 토큰을 실어서 요청을 보내면 인증이 필요한 경로의 요청이 잘 수행된다.
 ![img_20.png](img_20.png)
 
-![img_18.png](img_18.png)
+
+### 📍RefreshRotate
+Refresh 토큰을 받아 새로운 access 토큰을 발급해줄 때 refresh 토큰도 함께 갱신해주는 방법이다. Access 토큰은 통신과정에서 탈취당할 위험이 커서 만료기간을 짧게 두고 주기가 긴 Refresh 토큰으로 주기적으로 재발급 받도록 한다. 하지만 Refresh 토큰도 탈취당할 수 있기 때문에 이를 방지하고 로그인 지속시간이 길어진다는 장점(refresh 토큰이 계속 갱신돼서)이 있어 Refresh Rotate를 실행한다.
+
+#### 서버측 주도권
+단순히 JWT를 발급하여 클라이언트 측으로 전송하면 인증/인가에 대한 주도권 자체가 클라이언트 측에 맡겨진다. 이 경우 JWT가 탈취되면 만료되기 전까지 서버는 이를 막을 수 없다. 이를 방지하기 위해, 생명주기가 긴 refresh 토큰은 발급 시 서버 측 저장소에 저장해야 한다! 이후 클라이언트가 refresh 토큰을 사용해 요청을 보낼 때, 서버는 해당 토큰이 저장소에 있는지 확인하여 저장소에 저장된 토큰만 허용함으로써 "서버가 주도권"을 가질 수 있도록 한다.
+Refresh토큰이 계속 쌓일 경우 용량 문제가 발생할 수 있다. 이를 방지하기 위해 RDB를 사용하는 경우엔 스케줄러를 실행하여 일정 주기마다 유효기간이 지난 refresh 토큰을 삭제해주고, Redis를 사용하는 경우 TTL 설정을 통해 유효기간이 지나면 자동으로 삭제되게끔 하는 게 좋다.

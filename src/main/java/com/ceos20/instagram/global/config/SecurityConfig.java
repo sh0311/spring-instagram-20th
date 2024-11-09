@@ -4,7 +4,7 @@ package com.ceos20.instagram.global.config;
 import com.ceos20.instagram.jwt.JWTFilter;
 import com.ceos20.instagram.jwt.JWTUtil;
 import com.ceos20.instagram.jwt.LoginFilter;
-import com.ceos20.instagram.reissue.repository.RefreshRepository;
+import com.ceos20.instagram.refresh.repository.RefreshRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

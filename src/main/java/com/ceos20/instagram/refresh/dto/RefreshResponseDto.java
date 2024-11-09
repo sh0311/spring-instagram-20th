@@ -1,4 +1,4 @@
-package com.ceos20.instagram.reissue.dto;
+package com.ceos20.instagram.refresh.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

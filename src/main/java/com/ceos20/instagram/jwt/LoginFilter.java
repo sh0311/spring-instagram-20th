@@ -1,7 +1,7 @@
 package com.ceos20.instagram.jwt;
 
-import com.ceos20.instagram.reissue.domain.Refresh;
-import com.ceos20.instagram.reissue.repository.RefreshRepository;
+import com.ceos20.instagram.refresh.domain.Refresh;
+import com.ceos20.instagram.refresh.repository.RefreshRepository;
 import com.ceos20.instagram.user.domain.User;
 import com.ceos20.instagram.user.dto.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
