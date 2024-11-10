@@ -1645,7 +1645,7 @@ email, password로 로그인한 로그인 결과 response header에 access 토�
 ![img_22.png](img_22.png)
 
 reqeust header에 access 토큰을 실어서 요청을 보내면 인증이 필요한 경로의 요청이 잘 수행된다.
-![img_24.png](img_24.png)![img_20.png](img_20.png)
+![img_24.png](img_24.png)
 
 
 ### 📍RefreshRotate
