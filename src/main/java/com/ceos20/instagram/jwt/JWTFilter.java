@@ -27,14 +27,19 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String accessToken=request.getHeader("access");
+        //Swagger에서는 Bearer 형태의 토큰을 받을 수 있어서 access를 Bearer 형식으로 전달, 토큰 넣을 때 Bearer [access토큰]으로 넣어야됨
+        String accessToken=request.getHeader("Authorization");
 
         //access토큰이 없다면 다음 필터로 넘김
-        if(accessToken==null){
+        if(accessToken==null || !accessToken.startsWith("Bearer ")){
             filterChain.doFilter(request, response);
 
             return;
         }
+
+        accessToken=accessToken.substring(7);
+
+
 
         try{
             jwtUtil.isExpired(accessToken);

@@ -1640,12 +1640,12 @@ public class UsernamePasswordAuthenticationToken extends AbstractAuthenticationT
 ```
 
 ### 📍로그인 및 API 테스트
-로그인 결과 response header에 access 토큰이, cookie에 refresh 토큰이 잘 담겼음을 확인할 수 있다.
+email, password로 로그인한 로그인 결과 response header에 access 토큰이, cookie에 refresh 토큰이 잘 담겼음을 확인할 수 있다.
 ![img_21.png](img_21.png)
 ![img_22.png](img_22.png)
 
 reqeust header에 access 토큰을 실어서 요청을 보내면 인증이 필요한 경로의 요청이 잘 수행된다.
-![img_20.png](img_20.png)
+![img_24.png](img_24.png)![img_20.png](img_20.png)
 
 
 ### 📍RefreshRotate
