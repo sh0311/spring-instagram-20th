@@ -80,8 +80,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         saveRefreshToken(username, userId, refresh, 24*60*60*1000L);
 
-        //Authorization 헤더를 통해 토큰을 전송
-        response.addHeader("access",access);
+        //Authorization 헤더를 통해 토큰을 전송 (대부분 클라이언트 라이브러리의 인증 토큰 관리 방식 : Authorization 헤더에 의존)
+        response.addHeader("Authorization","Bearer "+ access);
         response.addCookie(createCookie("refresh",refresh));
         response.setStatus(HttpStatus.OK.value());
     }

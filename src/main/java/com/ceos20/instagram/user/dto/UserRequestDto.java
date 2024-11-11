@@ -43,7 +43,7 @@ public class UserRequestDto {  //정보수정할 때 바뀌지 않은 정보는 
                 .introduce(introduce)
                 .profileImageurl(profileImageurl)
                 .status(UserStatus.ACTIVE) //클라이언트가 직접 설정하는 게 아니라서 여기서 지정해주기
-                .role(UserRole.USER) //클라이언트가 직접 설정하는 게 아니라서 여기서 지정해주기(비활성화는 dto 없이 따로 비활성화용 컨트롤러 만들기)
+                .role(UserRole.ROLE_USER) //클라이언트가 직접 설정하는 게 아니라서 여기서 지정해주기(비활성화는 dto 없이 따로 비활성화용 컨트롤러 만들기)
                 .build();
     }
 }

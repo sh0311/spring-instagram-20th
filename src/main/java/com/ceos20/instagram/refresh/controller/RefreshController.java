@@ -23,7 +23,7 @@ public class RefreshController {
 
         RefreshResponseDto dto =reissueService.reissue(refreshToken);
 
-        response.setHeader("access", dto.getAccessToken());
+        response.setHeader("Authorization", "Bearer " + dto.getAccessToken());
         response.addCookie(createCookie("refresh", dto.getRefreshToken()));
 
         return ResponseEntity.ok().build();

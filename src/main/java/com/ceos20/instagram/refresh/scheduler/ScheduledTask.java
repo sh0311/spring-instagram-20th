@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
@@ -17,7 +18,8 @@ public class ScheduledTask {
     private final RefreshRepository refreshRepository;
 
     // 날짜 형식에 맞게 변경
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
 
     @Scheduled(fixedRate = 24000 * 60 * 60) //24시간마다 수행
     public void scheduledDeleteRefresh(){

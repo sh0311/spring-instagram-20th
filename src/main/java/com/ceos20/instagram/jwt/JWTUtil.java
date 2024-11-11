@@ -47,7 +47,7 @@ public class JWTUtil {
 
 
 
-    //토큰 생성
+    //토큰 생성 (user id 빼고 나중에 인증된 customUserDetails 만들때 username으로 user 객체 찾고 얘의 id 가져와 custom객체에 저장해도 @AuthenticationPrincipal에서 getId() 가능)
     public String createJwt(String category, String username, String role, Long userId, Long expiredMs){
         return Jwts.builder()
                 .claim("category", category)
