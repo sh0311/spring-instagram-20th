@@ -1528,7 +1528,7 @@ public class PostImage {
 ### 2) Access Token + Refresh Token을 이용한 인증
 ![img_23.png](img_23.png)
 
-1)클라이언트가 요청을 보내면 서버측에서는 요청 헤더에 access라는 이름의 헤더값을 읽는다.
+1)클라이언트가 요청을 보내면 서버측에서는 요청 헤더에 Authorization라는 이름의 헤더값을 읽는다.
 
 2-1) 이때 access 토큰이 없다면 → 이 필터는 더 이상 처리하지 않고 요청을 다음 필터로 넘긴다. 인증이 필요없는 경로의 요청이라면 permitAll()과 같은 설정에 의해 인증 없이 정상적으로 처리한다.(ex. /login 요청 : LoginFilter에서 가로채서 로그인 로직을 수행) 인증이 필요한 경로의 요청이라면 Spring Security의 다른 필터가 요청이 인증되지 않은 상태임을 인식하고 401 Unauthorized 응답을 반환한다.
 
