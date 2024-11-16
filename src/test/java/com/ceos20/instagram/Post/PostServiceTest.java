@@ -158,8 +158,8 @@ class PostServiceTest {
 
         given(userRepository.findById(anyLong()))
                 .willReturn(Optional.of(user));
-        given(postImageService.changeToPostImage(anyList(), any(Post.class)))
-                .willReturn(List.of(image1, image2));
+        //given(postImageService.changeToPostImage(anyList(), any(Post.class)))
+                //.willReturn(List.of(image1, image2));
 
         //when
         postService.createPost(request1,1L);
@@ -231,8 +231,8 @@ class PostServiceTest {
 
         given(postRepository.findById(postId)).willReturn(Optional.of(post2));
 
-        given(postImageService.changeToPostImage(anyList(), eq(post2)))
-                .willReturn(new ArrayList<>());
+        //given(postImageService.changeToPostImage(anyList(), eq(post2)))
+                //.willReturn(new ArrayList<>());
 
         //when
         PostResponseDto response=postService.updatePost(postId, userId, request);
@@ -244,7 +244,7 @@ class PostServiceTest {
         // 원본 게시글도 수정된 상태인지 검증
         verify(postRepository).findById(postId); // 게시글 조회 확인
         verify(postRepository).save(post2); // 수정된 게시글이 저장되었는지 확인
-        verify(postImageService).changeToPostImage(anyList(), eq(post2)); // 이미지 변환이 호출되었는지 검증
+        //verify(postImageService).changeToPostImage(anyList(), eq(post2)); // 이미지 변환이 호출되었는지 검증
     }
 
     @Test

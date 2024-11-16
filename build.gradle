@@ -38,6 +38,9 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
+	// .env 파일을 스프링부트에서 읽기 위한 설정
+	implementation 'me.paulschwarz:spring-dotenv:3.0.0'
+
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'

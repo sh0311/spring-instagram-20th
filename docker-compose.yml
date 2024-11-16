@@ -1,0 +1,33 @@
+version: "3"
+
+services:
+  db:
+    image: mysql:8.0  # Mac에서 MySQL 8.0 사용
+    container_name: mysql-container #compose up을 통해 생성될 mysql 컨테이너 이름 지정
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  #.env 파일에서 자동으로 값을 읽음
+      MYSQL_DATABASE: instagram
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    restart: always
+
+  web:
+    container_name: instagram-container
+    build: .   # 현재 디렉토리에 있는 Dockerfile을 사용하여 이미지를 빌드
+    ports:
+      - "8080:8080"
+    depends_on:  # 위에 생성한 db 컨테이너와 의존 관계를 맺어 db 컨테이너가 먼저 실행한 뒤 instagram-container가 실행되게 한다.
+      - db
+    environment:
+      mysql_host: db  # MySQL서버 컨테이너의 호스트 이름-> web서비스가 db서비스에 접근할 수 있도록 설정 (Docker Compose를 사용하면 동일한 네트워크 내에서 컨테이너 이름을 호스트 이름으로 사용하여 서로 접근함)
+    env_file:
+      - .env   #.env파일의 환경변수를 docker compose가 읽어 컨테이너에 전달
+    restart: always
+    volumes:
+      - app:/app
+
+volumes:
+  dbdata:
+  app:
