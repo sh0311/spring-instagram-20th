@@ -1698,6 +1698,9 @@ docker run --name test -d -p 8088:80 httpd
 `docker run --name ws3 -d -p 8080:80 -v ~/Desktop/htdocs:/usr/local/apache2/htdocs/ httpd`
 
 ### 📍도커 기반 스프링부트 빌드해보기
+
+#### ✅ jar 파일 생성
+
 ![img_27.png](img_27.png)
 
 ![img_28.png](img_28.png)
