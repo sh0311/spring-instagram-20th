@@ -409,7 +409,7 @@ Hibernate:
 
 ### Q1. 어떻게  data jpa는 interface만으로도 함수가 구현이 되는가?
 
-![img_1.png](img_1.png)
+![img_1.png](ReadMe_Images/img_1.png)
 
 Spring Data JPA는 애플리케이션 실행 시, JpaRepository 인터페이스를 상속하는 repository 인터페이스에 대해 프록시 패턴을 사용해 SimpleJpaRepository 기반의 구현체를 동적으로 생성하고, 이를 빈으로 등록해 의존성을 주입해주기 때문이다.
 
