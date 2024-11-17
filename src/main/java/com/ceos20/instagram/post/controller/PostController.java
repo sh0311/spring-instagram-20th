@@ -37,9 +37,6 @@ public class PostController {
             @ApiResponse(responseCode="201", description="게시글 생성 성공"),
             @ApiResponse(responseCode="400", description="게시글 생성 실패")
     })
-    @Parameters({
-            @Parameter(name = "userId",description = "게시글 생성할 유저의 id", in = ParameterIn.PATH ,required = true),
-    })
     public ResponseEntity<Void> createPost(@ModelAttribute PostRequestDto postRequestDto, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId=customUserDetails.getId();
         postService.createPost(postRequestDto, userId);
@@ -56,8 +53,7 @@ public class PostController {
     @Parameters({
             @Parameter(name = "userId",description = "게시글 조회할 유저의 id", in = ParameterIn.PATH ,required = true),
     })
-    public ResponseEntity<List<PostResponseDto>> getAllPostsByUser(@AuthenticationPrincipal CustomUserDetails customUserDetails){
-        Long userId=customUserDetails.getId();
+    public ResponseEntity<List<PostResponseDto>> getAllPostsByUser(@PathVariable Long userId){
         List<PostResponseDto> dtos=postService.getAllPostsByUser(userId);
         return ResponseEntity.ok().body(dtos);
     }
@@ -84,9 +80,6 @@ public class PostController {
             @ApiResponse(responseCode="200", description="게시글 조회 성공"),
             @ApiResponse(responseCode="404", description="해당 id 유저 존재하지 않음")
     })
-    @Parameters({
-            @Parameter(name = "userId",description = "현재 조회하려는 유저의 id", in = ParameterIn.PATH ,required = true),
-    })
     public ResponseEntity<List<PostResponseDto>> getAllPostsByFollowing(@AuthenticationPrincipal CustomUserDetails customUserDetails){
         Long userId=customUserDetails.getId();
         List<PostResponseDto> dtos=postService.getAllPostsByFollowing(userId);
@@ -101,7 +94,6 @@ public class PostController {
             @ApiResponse(responseCode="404", description="해당 id 유저/게시글이 존재하지 않음")
     })
     @Parameters({
-            @Parameter(name = "userId",description = "유저 id", in = ParameterIn.PATH ,required = true),
             @Parameter(name = "postId",description = "게시글 id", in = ParameterIn.PATH ,required = true),
     })
     public ResponseEntity<PostResponseDto> updatePost(@PathVariable Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails, @ModelAttribute PostRequestDto postRequestDto){

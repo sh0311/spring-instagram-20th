@@ -35,7 +35,6 @@ public class CommentLikeController {
     })
     @Parameters({
             @Parameter(name = "commentId",description = "좋아요 누를 댓글 id", in = ParameterIn.PATH ,required = true),
-            @Parameter(name = "userId",description = "좋아요 누를 유저 id", in = ParameterIn.PATH ,required = true),
     })
     public ResponseEntity<Void> pressCommentLike(@PathVariable Long commentId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();

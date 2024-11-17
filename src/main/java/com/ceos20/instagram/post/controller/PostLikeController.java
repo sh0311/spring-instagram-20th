@@ -33,7 +33,6 @@ public class PostLikeController {
     })
     @Parameters({
             @Parameter(name = "postId",description = "게시글 id", in = ParameterIn.PATH ,required = true),
-            @Parameter(name = "userId",description = "누르는 유저 id", in = ParameterIn.PATH ,required = true),
     })
     public ResponseEntity<Void> pressLike(@PathVariable Long postId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId = customUserDetails.getId();

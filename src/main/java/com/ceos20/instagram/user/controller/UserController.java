@@ -62,9 +62,6 @@ public class UserController {
             @ApiResponse(responseCode="200", description="유저 정보 수정 성공"),
             @ApiResponse(responseCode="404", description="해당 유저 존재하지 않음")
     })
-    @Parameters({
-            @Parameter(name = "userId",description = "정보 수정할 유저 id", in = ParameterIn.PATH ,required = true),
-    })
     public ResponseEntity<UserResponseDto> updateUser(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequestDto userRequestDto){
         Long userId=customUserDetails.getId();
         UserResponseDto dto=userService.updateUser(userRequestDto, userId);

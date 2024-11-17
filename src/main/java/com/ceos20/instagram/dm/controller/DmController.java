@@ -90,7 +90,6 @@ public class DmController {
     })
     @Parameters({
             @Parameter(name = "roomId",description = "조회하려는 채팅방 id", in = ParameterIn.PATH ,required = true),
-            @Parameter(name = "userId",description = "현재 로그인한 유저 id", in = ParameterIn.PATH ,required = true),
     })
     public ResponseEntity<List<MessageResponseDto>> getMessagesInRooms(@PathVariable Long roomId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
         Long userId = customUserDetails.getId();
