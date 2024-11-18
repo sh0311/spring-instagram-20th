@@ -1913,7 +1913,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://mysql-container:3306/instagram?serverTimezone=UTC
     username: root
-    password: nsh0311~^^
+    password: ${MYSQL_ROOT_PASSWORD}
   jpa:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
