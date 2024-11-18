@@ -1682,7 +1682,7 @@ docker run --name test -d -p 8088:80 httpd
 
 `docker exec -it 컨테이너명 /bin/bash (또는 /bin/sh)` 
 
-특정 컨테이너를 대상으로 명령을 내리고 싶을 때 사용하며 그 결과가 우리한테 보여지게 된다. bin/sh은 기능이 많이 부족해서 bin/bash를 이용하는 게 좋다. 하지만 컨테이너에 따라 bash shell이 존재 하지 않는 경우가 있어 이런 경우엔 /bin/sh 이용해야 한다.
+특정 컨테이너를 대상으로 명령을 내리고 싶을 때 사용하며 그 결과가 우리한테 보여지게 된다. bin/sh은 기능이 많이 부족해서 bin/bash를 이용하는 게 좋다. 하지만 컨테이너에 따라 bash bash가 존재 하지 않는 경우가 있어 이런 경우엔 /bin/sh 이용해야 한다.
 
 `-it` : 터미널을 이용해 컨테이너와 상호작용하기 위해 사용한다. 실시간으로 명령을 실행하고 결과를 확인할 수 있게 된다.
 
@@ -1750,7 +1750,9 @@ Caused by: com.mysql.cj.exceptions.CJCommunicationsException: Communications lin
 
 ```
 
-MySQL 관련 에러인 것 같아 찾아보니, MySQL과 SpringBoot 서버를 도커 상에서 연걸하기 위해서는 **애플리케이션 서버(Spring Boot)와 데이터베이스(MySQL)가 각각 Docker 컨테이너로 실행되고, 이들 컨테이너가 네트워크를 통해 통신할 수 있어야 한다**고 한다. 
+MySQL 관련 에러인 것 같아 찾아보니, MySQL과 SpringBoot 서버를 도커 상에서 연걸하기 위해서는
+
+**애플리케이션 서버(Spring Boot)와 데이터베이스(MySQL)가 각각 Docker 컨테이너로 실행되고, 이들 컨테이너가 네트워크를 통해 통신할 수 있어야 한다**고 한다. 
 
 현재는 Spring Boot 컨테이너만 생성된 상태이기 때문에 MySQL 컨테이너를 추가적으로 만들어 주어야 한다.
 
@@ -1764,7 +1766,7 @@ MySQL은 따로 Dockerfile 만들어줄 필요 없이, DockerHub에서 이미 �
 ![ReadMe_Images/img_33.png](ReadMe_Images/img_33.png)
 ![ReadMe_Images/img_34.png](ReadMe_Images/img_34.png)
 
-#### 2. MySQL 이미지를 실행시켜 컨테이너 만들기
+#### 2. MySQL 이미지를 실행시켜 컨테이너 만들어보기
 워크벤치에 접속하거나 Spring Boot의 로컬 환경에서 데이터베이스와 연결할 때 MySQL의 username과 password가 필요한 것처럼, **MySQL 이미지를 컨테이너화할 때도 root 계정의 비밀번호를 설정해야 한다.**
 
 `docker run --name <컨테이너명> -p <호스트 포트>:<컨테이너 내부 포트> -e MYSQL_ROOT_PASSWORD=<패스워드> -d mysql:8.0`
@@ -1779,21 +1781,13 @@ MySQL은 따로 Dockerfile 만들어줄 필요 없이, DockerHub에서 이미 �
 
 ![ReadMe_Images/img_36.png](ReadMe_Images/img_36.png)
 
-Docker에서 MySQL 컨테이너를 처음 생성하면 기본적으로 아무 데이터베이스도 생성되어 있지 않다. 따라서 컨테이너 내부에는 데이터베이스가 없는 상태로 시작한다.
-만약 Docker에서 MySQL 이미지를 실행할 때 컨테이너 내부에서 데이터베이스를 생성하려면 내가 데이터베이스를 직접 만들어주어야 한다.
-
-(cf. Workbench에 생성했던 데이터베이스는 로컬 MySQL 서버에 존재하기에 방금 만든 MySQL 컨테이너와는 아무 상관이 없다.)
-참고로 당연하지만 데이터베이스를 새로 만들어주는 거라 기존에 workbench 사용했을 때 쓰던 데이터들은 못 쓰고 데이터들이 리셋된 상태이다.
-
-
-![ReadMe_Images/img_37.png](ReadMe_Images/img_37.png)
 
 #### 3. application.yml에서 연결된 데이터베이스 이름을 바꿔주기
-이후 application.yml에서 연결된 데이터베이스 이름을 바꿔주어야 한다. 현재는 localhost이지만 Spring boot를 도커로 띄우면 mysql-container 컨테이너와 연결하게 되기 때문이다.
+이후 application.yml에서 연결된 데이터베이스 이름을 바꿔주었다. 현재는 localhost이지만 Spring boot를 도커로 띄우면 mysql-container 컨테이너와 연결되어야 한다.
 
-따라서 URL의 호스트명을 MySQL 컨테이너 이름으로 변경해주어야 한다.
+따라서 **URL의 호스트명을 MySQL 컨테이너 이름**으로 변경해주어야 한다.
 
--> Why? : Spring Boot 컨테이너와 MySQL 컨테이너가 Docker Compose로 함께 관리되는 경우, 두 컨테이너는 자동으로 같은 네트워크에 연결된다. Docker Compose가 생성한 네트워크 환경에서는 컨테이너 이름이나 서비스 이름을 호스트네임으로 사용해 서로 통신할 수 있다.
+-> Spring Boot 컨테이너와 MySQL 컨테이너가 Docker Compose로 함께 관리되는 경우, 두 컨테이너는 자동으로 같은 네트워크에 연결된다. Docker Compose가 생성한 네트워크 환경에서는 컨테이너 이름이나 서비스 이름을 호스트네임으로 사용해 서로 통신할 수 있다.
 
 ```
 spring:
@@ -1802,9 +1796,12 @@ spring:
     url: jdbc:mysql://mysql-container:3306/instagram?serverTimezone=UTC
 ```
 
-#### 4. Docker Compose를 이용해 MySQL 컨테이너와 SpringBoot 컨테이너를 연결해주기
+#### 4. Docker Compose를 이용해 MySQL 컨테이너와 SpringBoot 컨테이너를 생성하고 연결해주기
 
-**두 컨테이너를 연결해주는 방법** : 두 컨테이너를 동일 네트워크에 포함시켜야 한다! docker-compose를 사옹하면 네트워크 항목을 정의하지 않아도 **자동으로 브릿지 네트워크가 생기고 두 컨테이너는 해당 네트워크에 종속**되기 때문에 내가 네트워크를 따로 생성하여 포함시키는 작업을 굳이 하지 않아도 된다.
+**<두 컨테이너를 연결해주는 방법>**
+
+두 컨테이너를 동일 네트워크에 포함시켜야 한다! docker-compose를 사옹하면 네트워크 항목을 정의하지 않아도 **자동으로 브릿지 네트워크가 생기고 두 컨테이너는 해당 네트워크에 종속**되기 때문에 내가 네트워크를 따로 생성하여 포함시키는 작업을 굳이 안해도 된다.
+
 이때 생성된 네트워크 이름은 [프로젝트 이름]_default로 설정되며 docker-compose up 명령어로 생성되고 docker-compose down 명령어로 삭제된다.
 
 **docker-compose.yml** : Dockerfile과 마찬가지로 프로젝트의 최상단에 생성한다.
@@ -1818,7 +1815,7 @@ services:
     container_name: mysql-container #compose up을 통해 생성될 mysql 컨테이너 이름 지정
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  #.env 파일에서 자동으로 값을 읽음
-      MYSQL_DATABASE: instagram
+      MYSQL_DATABASE: instagram  # Docker에서 MySQL 컨테이너를 처음 생성하면 기본적으로 아무 데이터베이스도 생성되어 있지 않아서 만들어줘야됨
     volumes:
       - dbdata:/var/lib/mysql
     ports:
@@ -1847,7 +1844,7 @@ volumes:
 - `image` : 컨테이너를 생성할 때 쓰일 이미지의 이름을 설정
 - `container_name` : compose up을 통해 생성될 컨테이너 이름을 지정
 - `environment` : 컨테이너 내부에서 사용할 환경변수를 지정하며, docker run 명령어의 -e 옵션과 동일하다.
-- `depends_on` : 특정 컨테이너에 대한 의존관계를 나타내며 이 항목에 명시된 컨테이너가 먼저 생성되고 실행된다. 위에서는 db 컨테이너가 먼저 실행한 뒤 instagram-container가 실행되게 한다.
+- `depends_on` : 특정 컨테이너에 대한 의존관계를 나타내며 이 항목에 명시된 컨테이너가 먼저 실행된 후에 실행되도록 보장한다. 위에서는 db 컨테이너가 먼저 실행한 뒤 instagram-container가 실행되게 한다. 하지만 depends_on은 **실행 순서만 보장**해주고, db 컨테이너의 초기화나 설정을 기다리진 않는다.
 - `ports` : 컨테이너를 개방할 포트를 설정하는 것으로, docker run 명령어의 -p와 같다.
 - `build` : build 항목에 정의된 dockerfile에서 이미지를 빌드하도록 설정한다. 이후 docker-compose up 명령을 실행하면, 이 빌드된 이미지를 기반으로 컨테이너를 생성하고 실행한다.
 - `restart: always` : spring boot 컨테이너가 정상적으로 실행이 될 때까지 컨테이너를 자동으로 재시작하도록 한다.

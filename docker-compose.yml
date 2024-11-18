@@ -6,7 +6,7 @@ services:
     container_name: mysql-container #compose up을 통해 생성될 mysql 컨테이너 이름 지정
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  #.env 파일에서 자동으로 값을 읽음
-      MYSQL_DATABASE: instagram
+      MYSQL_DATABASE: instagram  # Docker에서 MySQL 컨테이너를 처음 생성하면 기본적으로 아무 데이터베이스도 생성되어 있지 않아서 만들어줘야됨
     volumes:
       - dbdata:/var/lib/mysql
     ports:
