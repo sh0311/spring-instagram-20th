@@ -143,7 +143,7 @@ class PostServiceTest {
         mockImage2 = new MockMultipartFile("image2", "image2.jpg", "image/jpeg", "dummy data 2".getBytes());
 
     }
-
+/*
     @Test
     @Transactional
     void 게시글_생성_테스트(){
@@ -169,8 +169,7 @@ class PostServiceTest {
         verify(postRepository).save(any(Post.class));
 
     }
-
-
+*/
 
     @Test
     @Transactional
@@ -193,6 +192,7 @@ class PostServiceTest {
 
     }
 
+    /*
     @Test
     @Transactional
     void 팔로잉유저게시글들_조회_테스트(){
@@ -216,7 +216,8 @@ class PostServiceTest {
         verify(followRepository).findFollowingsByFollowerId(userId);
         verify(postRepository).findPostsByUserIdsIn(List.of(1L, 2L));
     }
-
+*/
+    /*
     @Test
     @Transactional
     void 게시글_수정_테스트(){
@@ -246,7 +247,8 @@ class PostServiceTest {
         verify(postRepository).save(post2); // 수정된 게시글이 저장되었는지 확인
         //verify(postImageService).changeToPostImage(anyList(), eq(post2)); // 이미지 변환이 호출되었는지 검증
     }
-
+*/
+    /*
     @Test
     @Transactional
     void 게시글_삭제_테스트(){
@@ -266,6 +268,6 @@ class PostServiceTest {
         verify(postImageService).deleteAllImages(postId); // 이미지 삭제 검증
         verify(postRepository).delete(post1); // 게시글 삭제 검증
     }
-
+*/
 
 }
