@@ -1962,3 +1962,250 @@ spring:
 따라서 새로운 connection을 만들고나서 다른 건 기존과 같게 적어주고 Port만 3307로 바꿔서 연결해주면 된다.
 ![ReadMe_Images/img_42.png](ReadMe_Images/img_42.png)
 
+# 7주차
+## 도커 이미지 배포하기
+
+### 📍과정
+
+
+💡 `어플리케이션을 build해서 jar 파일 생성 → 이미지 생성 → docker hub에 이미지 push → (이미지를 private으로 올렸다면 ec2에 도커 로그인) docker hub에서 이미지 pull → ec2에 .env생성 -> pull 받은 이미지를 run해서 컨테이너 생성 및 실행`
+
+
+1. `EC2 생성, RDS 생성`
+
+2. `<SSH를 이용해 EC2에 접속>`
+
+   2-1. EC2 인스턴스에 도커 설치
+
+    ```bash
+    # 로컬의 패키지 목록 데이터베이스를 업데이트 -> 최신 버전을 설치하기 위해 우선 패키지 목록을 업데이트
+    # 뭘 설치하기 전에 항상 패키지 목록을 업데이트 하고 설치하는 게 좋다
+    sudo apt update
+    
+    # 도커 설치 전 준비 과정
+    sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+    
+    # docker repository 접근하기 위해 GPG key 설정
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    
+    # Docker 공식 APT 저장소를 Ubuntu 시스템에 추가 (이 저장소를 추가해야 Ubuntu의 패키지 관리 시스템인 APT를 통해 Docker 설치 가능)
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    
+    # APT가 새로운 저장소 정보를 인식하고 해당 저장소에 있는 패키지 목록을 최신 상태로 업데이트하도록
+    sudo apt update
+    
+    # docker 설치
+    sudo apt-get install docker-ce docker-ce-cli containerd.io
+    ```
+
+   2-2. EC2 인스턴스에 Swap 메모리 설정
+
+   → 프리티어 버전의 EC2는 램 메모리가 1GB밖에 안돼서 메모리 부족현상을 겪게 될 수 있어서 이를 완화하기 위해 사용
+
+   →  ✅Swap 메모리란?
+
+      - 컴퓨터 시스템에서 물리적 RAM (주 메모리)이 부족할 때 사용하는 디스크 공간이다.
+      - 스왑 메모리는 주로 **장시간 사용되지 않는 데이터나 저우선순위의 데이터를 임시 저장**하는 데 사용하며 이를 통해 RAM은 더 중요하고 자주 사용되는 데이터 처리에 집중할 수 있어 전체 시스템의 효율성이 향상된다.
+      - 스왑 공간이 너무 크거나 너무 작으면 성능 문제나 메모리 부족 문제를 야기할 수 있어서 적절한 스왑 공간을 설정해야 한다. 보통 **RAM 의 1.5배에서 2배 사이**가 스왑 공간의 권장 크기이다.
+
+                 ```bash
+                 # swapfile 메모리 할당 (bs:블록크기, count:블록수, 스왑파일 크기:bs*count
+                 sudo dd if=/dev/zero of=/swapfile bs=128M count=16
+    
+                 # swapfile의 읽기, 쓰기가 가능하도록 권한 수정
+                 sudo chmod 600 /swapfile
+    
+                 # swap 공간 생성
+                 sudo mkswap /swapfile
+    
+                 # swap 공간에 swapfile 추가
+                 sudo swapon /swapfile
+    
+                 # 시스템 부팅시마다 자동으로 활성화되도록 파일시스템 수정
+                 sudo vi /etc/fstab
+                 ```
+
+
+   2-3. EC2 인스턴스에서 도커 허브에 로그인
+
+    ```bash
+    sudo docker login -u 내이름
+    ```
+
+3. `<Intellij에 들어가서>`
+
+   3-1. application.yml에 RDS를 이용하도록 설정
+
+    <img width="574" alt="image" src="https://github.com/user-attachments/assets/f88d810f-0ac0-4d35-9c4c-9f010595edae">
+
+   3-2. 스프링 어플리케이션 빌드해서 jar 파일 생성해주기
+
+   (그냥 build하면 계속 test에서 오류가 나서 test 빼고 build,,)
+
+    ```bash
+    ./gradlew clean build -x test
+    ```
+
+   3-2. 도커 이미지 만들어주기
+
+   (맥에서는 이미지 플랫폼을 설정해주어야 한다. 기본적으로 생성되는 arm64 이미지를 ubuntu 환경에 맞게 amd64로 설정해야 한다.)
+
+    ```bash
+    docker build --platform linux/amd64 -t 도커허브아이디/레포지토리 이름 .
+    ```
+
+   3-3. 도커 허브에 도커 이미지 올리기
+
+    ```bash
+    docker push 도커허브아이디/레포지토리 이름
+    ```
+
+
+4. `<SSH를 이용해 EC2에 접속>`
+
+   4-1. 도커 허브에 올린 이미지를 가져오기
+
+    ```bash
+    sudo docker pull 도커허브아이디/레포지토리 이름
+    ```
+
+   4-2. 이미지 확인
+
+    ```bash
+    sudo docker images
+    ```
+
+   4-3. 환경 변수를 컨테이너에 전달하기 위한 준비
+
+   → EC2에서 .env 파일을 생성해서 어플리케이션 내의 .env파일에 있는 환경변수를 모두 저장
+
+   (RDS, jwt secret key)
+
+    ```bash
+    vi .env
+    
+    # 후에 어플리케이션 내의 .env 파일에 있는 환경변수 모두 저장
+    ```
+
+   <img width="680" alt="image" src="https://github.com/user-attachments/assets/e18ed528-c459-45d2-b484-21881baf48d6">
+
+   4-4. 컨테이너 생성 및 실행
+
+    ```bash
+    sudo docker run --env-file .env -d -p 80:8080  이미지 이름
+    
+    # 이미지 이름은 도커허브아이디/레포지토리 이름
+    ```
+
+   port를 80:8080으로 매핑했기에 public ip주소:80으로 접속해야 한다.
+
+   <img width="684" alt="image" src="https://github.com/user-attachments/assets/735f4c95-47ac-4ac3-bd81-011b29cc1c51">
+
+
+### 📍docker-compose.yml 이용해 배포하는 방법
+
+#### ✅ 과정
+
+`어플리케이션을 build해서 jar 파일 생성 → 이미지 생성 → docker hub에 이미지 push → (이미지를 private으로 올렸다면 ec2에 도커 로그인) docker-compose 명령어로 실행`
+
+-> docker hub에서 이미지를 pull 받고, pull 받은 이미지를 run해서 컨테이너를 생성 및 실행하는 과정을 docker-compose.yml에서 하게 된다.
+
+```bash
+version: "3"
+
+services
+  web:
+    container_name: instagram-container
+    platform: linux/amd6
+    image : alice311/instagram:latest
+    ports:
+      - "8080:8080"
+    environment:
+      #mysql_host: db  # MySQL서버 컨테이너의 호스트 이름-> web서비스가 db서비스에 접근할 수 있도록 설정 (Docker Compose를 사용하면 동일한 네트워크 내에서 컨테이너 이름을 호스트 이름으로 사용하여 서로 접근함)
+      SPRING_DATASOURCE_URL : ${RDS_URL}
+      SPRING_DATASOURCE_USERNAME: ${RDS_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${RDS_PASSWORD}
+    env_file:
+      - .env   #.env파일의 환경변수를 docker compose가 읽어 컨테이너에 전달
+    restart: always
+    volumes:
+      - app:/app
+
+volumes:
+  app
+```
+
+### **상세과정**
+
+1. 이미지를 docker hub에 push 하는 것 까지는 위의 방법과 동일
+
+
+2. EC2에 docker-compose 설치
+
+    ```bash
+    sudo apt update
+    sudo apt install docker-compose
+    ```
+
+   2. 로컬의 docker-compose.yml을 ec2에 업로드
+
+       ```bash
+       scp -i /로컬 pem키 경로/pem키 이름.pem /Users/alice/spring-instagram-20th/docker-compose.yml ubuntu@ec2의 퍼블릭ip주소:~/
+       ```
+
+       위의 명령어를 **로컬 터미널**에서 실행한다.
+      
+       스프링 부트 애플리케이션을 빌드해서 Docker 이미지를 만들 때, 이미지에는 애플리케이션 실행에 필요한 파일 및 리소스만 포함된다.
+       
+       `docker-compose.yml, .env, .git, .gitignore, application.yml` 같이 프로젝트 설정 파일 및 개발 환경에서만 필요한 파일들은 Docker 이미지에 포함되지 않는다.
+        
+       따라서 docker-compose.yml을 내가 직접 배포환경인 ec2에 업로드 해주어야 한다고 한다. 나중에 CI/CD 파이프라인(Github Actions)에도 포함시켜야 한다고 한다.
+
+3. docker-compose 이용해 컨테이너 생성 및 실행
+
+    ```bash
+    docker-compose -f docker-compose.yml up
+    ```
+
+
+docker-compose.yml에서 port를 8080:8080으로 연결했기 때문에 public ip주소:8080으로 접속해야 한다.
+
+<img width="714" alt="image" src="https://github.com/user-attachments/assets/054d6f8d-39e1-4ea2-a6e9-5583a08d66ca">
+
+
+#### 🚨에러 - RDS 내에 데이터베이스 안 만들어줘서 발생
+Docker Compose 이용해 컨테이너를 생성하고 실행한뒤, `sudo docker ps`로 접속했을 때 컨테이너가 생성되었음을 확인했지만 
+public ip로 접속하려하면 접속이 안되고 `sudo docker ps`로 다시 조회하면 실행중이었던 컨테이너가 사라져있었다..
+
+컨테이너 로그를 살펴보기 위해 `sudo docker logs 컨테이너id` 을 실행
+
+![image](https://github.com/user-attachments/assets/8648dfa2-741f-4a3d-939e-45b273fa5702)
+![image](https://github.com/user-attachments/assets/c7396592-3339-4147-84cb-444da36ff98a)
+
+instagram이라는 데이터베이스를 찾을 수 없다고 떴다.
+
+docker-compose.yml에 datasource url을 `jdbc:mysql://${RDS_ENDPOINT}/instagram?serverTimezone=UTC` 이렇게 등록해놨는데 RDS 내에 instagram이라는 데이터베이스가 없어서 발생한 오류다.
+
+따라서 아래와 같이 RDS에 접속해 instagram이라는 데이터베이스를 생성해주어 해결했다.
+![image](https://github.com/user-attachments/assets/25ccacd8-bdcc-4093-a774-39da109ac870)
+
+
+
+🤔**RDS는 컨테이너 없이 endpoint 설정만으로 연결이 되는 이유?**
+
+RDS는 관계형 데이터베이스를 간편하게 클라우드에서 설정, 운영, 확장이 가능하도록 지원하는 Paas 형태의 웹 서비스이다. 
+
+따라서 데이터베이스 설치, 배포, 관리, 유지보수를 AWS에서 자동으로 처리하므로, 사용자가 인프라를 직접 구성할 필요 없이 엔드포인트로 데이터베이스에 연결하기만 하면 데이터베이스를 사용할 수 있다.
+
+.env에 RDS endpoint를 이용한 url, RDS username, RDS password에 명시해주고 이를 서버의 environment에 넣으면 된다.
+
+```
+environment:
+      SPRING_DATASOURCE_URL : ${RDS_URL}
+      SPRING_DATASOURCE_USERNAME: ${RDS_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${RDS_PASSWORD}
+    env_file:
+      - .env   #.env파일의 환경변수를 docker compose가 읽어 컨테이너에 전달
+```
+    
+
