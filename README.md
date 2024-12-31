@@ -1568,7 +1568,7 @@ public class PostImage {
 - SecurityContext → SecurityContextHolder를 통해 얻을 수 있으며, 현재 인증된 사용자의 정보(Authentication)를 포함한다
 - Authentication → principal, credentials, authorities 필드를 가지며, 인증 전 상황과 인증 후 상황에 따라 사용되는 목적이 달라진다. 
 
-SecurityContextHolder는 로그인한 사용자의 username, user id, role 등의 정보를 저장하고 이를 필요할 때 추출할 수 있는 저장소 역할을 한다. JWTFilter는 요청에 포함된 JWT를 검증하고나서 유효한 경우에 UsernamePasswordAuthenticationToken 객체를 생성해 SecurityContextHolder에 보관한다. 이 UsernamePasswordAuthenticationToken에는 사용자의 UserDetails 객체가 담겨 있는데, 이 객체에 담는 정보를(아래 코드에서는 username, role, id) 추출할 수 있다. UserDetails 객체에 담길 정보는 JWT에서 추출된 것이므로 JWT에도 해당 정보를 포함해야 한다.
+SecurityContextHolder는 로그인한 사용자의 username, user id, role 등의 정보를 저장하고 이를 필요할 때 추출할 수 있는 저장소 역할을 한다. JWTFilter는 요청에 포함된 JWT를 검증하고나서 유효한 경우에 UsernamePasswordAuthenticationToken 객체를 생성해 SecurityContextHolder에 보관한다. 이 UsernamePasswordAuthenticationToken에는 사용자의 UserDetails 객체가 담겨 있는데, 이 객체에 담는 정보를(아래 코드에서는 username, role, id) 추출할 수 있다. UserDetails 객체에 담길 정보는 JWT에서 추출된 것이므로 JWT에도 해당 정보를 포함해야 한다. 또는, 토큰으로부터 username을 추출한 후 얘를 이용해 userRepository에서 User 객체를 조회하고 이 객체를 UserDetails에 담는 방식으로도 구현할 수 있다. 이 방법을 사용하면 User 객체의 모든 필드에 접근할 수 있다. 이때 UserDetails에서 get필드명() 메소드를 추가로 생성해주어야 한다.
 
 cf) 로그인 한 사용자의 정보 이용할 때 @AuthenticationPrincipal을 이용할 수 있는데 이는 SecurityContextHolder에서 principal (UserDetails)을 가져오게 되는 것이다.
 ```
